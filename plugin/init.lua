@@ -8,20 +8,17 @@ vim.api.nvim_create_autocmd("InsertEnter", {
     callback = function()
         -- Set the completion handler
         _G.completion_handler = function()
+            local current_line = vim.api.nvim_get_current_line()
             local current_col = vim.api.nvim_win_get_cursor(0)[2]
+            local current_word = vim.fn.expand("<cword>")
+
             local suggestion = rktmb_deepseek_complete.generate_sentence()
 
-            -- Create a completion item with the correct structure
-            local completion_items = {
-                { word = suggestion, kind = "Random Sentence", menu = "[random]", icase = 1 }
-            }
-
-            -- Trigger the completion
-            vim.fn.complete(current_col + 1, completion_items)  -- Use current_col + 1 for the correct position
+            vim.fn.complete(current_col, {
+                { word = suggestion, kind = "random sentence", menu = "[random]", icase = 1, abbr = current_word }
+            })
         end
 
-        -- Trigger the completion immediately after entering insert mode
-        vim.defer_fn(_G.completion_handler, 0)
 
         vim.keymap.set("i", "<M-PageDown>", function()
             vim.defer_fn(_G.completion_handler, 0)
