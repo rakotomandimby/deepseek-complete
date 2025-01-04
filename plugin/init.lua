@@ -1,7 +1,6 @@
 local rktmb_deepseek_complete = require("rktmb-deepseek-complete")
 rktmb_deepseek_complete.log("Entered init.lua")
 
--- Use a global variable to store the completion handler
 _G.completion_handler = nil
 
 vim.api.nvim_create_autocmd("InsertEnter", {
@@ -22,9 +21,8 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 
 
         vim.keymap.set("i", "<M-PageDown>", function()
-            -- Call the completion handler with a timer to defer execution
             vim.defer_fn(_G.completion_handler, 0)
-            return "" -- Return empty string to avoid inserting characters.
+            return ""
         end, { noremap = true, expr = true, silent = true })
     end
 })
