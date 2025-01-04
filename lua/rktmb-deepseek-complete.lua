@@ -1,8 +1,16 @@
 -- Initialize a module
 local M = {}
 
+-- Function to log a message into /tmp/rktmb-deepseek-complete.log
+function M.log(message)
+    local log_file = io.open("/tmp/rktmb-deepseek-complete.log", "a")
+    log_file:write(message .. "\n")
+    log_file:close()
+end
+
 -- Function to generate a random sentence
 function M.generate_sentence()
+  M.log("Entered generate_sentence()")
   local sentences = {
     "The quick brown fox jumps over the lazy dog.",
     "The five boxing wizards jump quickly.",
