@@ -29,10 +29,10 @@ local function show_suggestion()
   rktmb_deepseek_complete.log("Cursor position before <Esc>A: " .. vim.inspect(current_cursor_pos))
 
 
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>A", true, false, true), 'n', true)
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>A", true, false, true), 'i', true)
 
     -- adding some debug logs
-  current_cursor_pos = vim.api.nvim_win_get_cursor(0) -- Get cursor pos before moving
+  current_cursor_pos = vim.api.nvim_win_get_cursor(0) -- Get cursor pos after moving
   rktmb_deepseek_complete.log("Cursor position after <Esc>A: " .. vim.inspect(current_cursor_pos))
 
 
