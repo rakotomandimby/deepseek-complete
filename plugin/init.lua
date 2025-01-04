@@ -7,6 +7,13 @@ vim.api.nvim_set_hl(0, "InlineSuggestion", { fg = "#808080", bg = "NONE" }) -- G
 _G.completion_handler = nil
 _G.current_extmark = nil -- Store the extmark ID
 
+local function clear_suggestion()
+    if _G.current_extmark then
+        vim.api.nvim_buf_del_extmark(0, _G.current_extmark.ns, _G.current_extmark.id)
+        _G.current_extmark = nil
+    end
+end
+
 vim.api.nvim_create_autocmd("InsertEnter", {
     pattern = "*",
     callback = function()
@@ -17,11 +24,7 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 
             local suggestion = rktmb_deepseek_complete.generate_sentence()
 
-            -- Clear previous suggestion if any
-            if _G.current_extmark then
-                vim.api.nvim_buf_del_extmark(0, _G.current_extmark.ns, _G.current_extmark.id)
-                _G.current_extmark = nil
-            end
+            clear_suggestion() -- Clear any existing suggestion
 
             local ns_id = vim.api.nvim_create_namespace("rktmb-deepseek-complete-ns")
             local extmark_id = vim.api.nvim_buf_set_extmark(0, ns_id, vim.api.nvim_win_get_cursor(0)[1] - 1, current_col, {
@@ -38,6 +41,19 @@ vim.api.nvim_create_autocmd("InsertEnter", {
             vim.defer_fn(_G.completion_handler, 0)
             return ""
         end, { noremap = true, expr = true, silent = true })
+
+
+        -- Autocmd to clear the suggestion on further typing
+        vim.api.nvim_create_autocmd("TextChangedI", {
+            buffer = 0,
+            callback = function()
+                clear_suggestion()
+                -- Remove this autocommand after it triggers once
+                vim.api.nvim_del_autocmd(vim.api.nvim_get_autocmds({ buffer = 0, event = "TextChangedI" })[1].id)
+            end
+        })
+
+
     end
 })
 
@@ -46,11 +62,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
     callback = function()
         vim.keymap.del("i", "<M-PageDown>")
         _G.completion_handler = nil
-
-        -- Clear the suggestion on InsertLeave
-        if _G.current_extmark then
-            vim.api.nvim_buf_del_extmark(0, _G.current_extmark.ns, _G.current_extmark.id)
-            _G.current_extmark = nil
-        end
+        clear_suggestion()
     end
 })
+
