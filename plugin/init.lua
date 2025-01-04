@@ -12,14 +12,15 @@ _G.suggest_random_sentence = function()  -- Make this function global
     virt_text = { { sentence, "Comment" } },  -- Use "Comment" highlight group
     virt_text_pos = "overlay",
   }
-  vim.api.nvim_buf_set_extmark(0, vim.fn.nsID("rktmb-deepseek-complete"), current_row - 1, #current_line, opts)
+  local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
+  vim.api.nvim_buf_set_extmark(0, ns_id, current_row - 1, #current_line, opts)
 
   local augroup_id = vim.api.nvim_create_augroup("RktmbDeepseekCompleteSuggestions", { clear = true })
   vim.api.nvim_create_autocmd("TextChangedI", {
     group = augroup_id,
     buffer = 0,
     callback = function()
-      vim.api.nvim_buf_clear_namespace(0, vim.fn.nsID("rktmb-deepseek-complete"), 0, -1)
+      vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
       vim.api.nvim_del_augroup_by_id(augroup_id) -- Clean up the autocommand group
     end,
   })
