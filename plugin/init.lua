@@ -20,6 +20,11 @@ end
 -- Function to show the suggestion when triggered
 local function show_suggestion()
   clear_suggestion()
+
+  -- Get the current buffer and cursor position *BEFORE* moving the cursor
+  local bufnr = vim.api.nvim_get_current_buf()
+  local initial_cursor_pos = vim.api.nvim_win_get_cursor(0)
+
   -- Move the cursor to the end of the line
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc><End>a", true, false, true), 'n', true)
 
@@ -29,11 +34,13 @@ local function show_suggestion()
 
   -- Split the suggestion into lines
   local lines = vim.split(suggestion, "\n")
-  -- Get the current buffer and cursor position
-  local bufnr = vim.api.nvim_get_current_buf()
+
+
+  -- Get the cursor position *AFTER* moving to the end of the line.  Crucially, use initial_cursor_pos[1] for the line!
   local cursor_pos = vim.api.nvim_win_get_cursor(0)
-  local cursor_line = cursor_pos[1] - 1 -- zero-indexed
+  local cursor_line = initial_cursor_pos[1] -1 -- zero-indexed
   local cursor_col = cursor_pos[2]
+
 
   -- Create a namespace for our extmarks
   local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
@@ -42,7 +49,7 @@ local function show_suggestion()
   _G.current_extmarks = {}
 
   for i, line in ipairs(lines) do
-    local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, cursor_line + i, 0, {
+    local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, cursor_line + i -1, cursor_col, {  -- cursor_line is already zero-indexed
       virt_text = { { line, "InlineSuggestion" } },
       virt_text_pos = 'overlay',
     })
