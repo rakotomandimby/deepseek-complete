@@ -1,73 +1,84 @@
-local rktmb_deepseek_complete = require("rktmb-deepseek-complete")
-rktmb_deepseek_complete.log("Entered init.lua")
+-- Require the module containing the generate_sentence function
+local deepseek_complete = require('rktmb-deepseek-complete')
 
--- Define the highlight group for the suggestion text
-vim.api.nvim_set_hl(0, "InlineSuggestion", { fg = "#808080", bg = "NONE" })
+-- Create a table to store our functions and state
+local M = {}
 
--- Global variables to keep track of extmarks
-_G.current_extmarks = nil
+-- Function to clear the suggestion when the user types or moves
+function M.clear_suggestion()
+  if M._suggestion then
+    local bufnr = M._suggestion.bufnr
+    local start_line = M._suggestion.start_line
+    local end_line = M._suggestion.end_line
+    local namespace = M._suggestion.namespace
 
--- Function to clear the current suggestion
-local function clear_suggestion()
-  if _G.current_extmarks then
-    for _, extmark in pairs(_G.current_extmarks) do
-      vim.api.nvim_buf_del_extmark(0, extmark.ns, extmark.id)
-    end
-    _G.current_extmarks = nil
+    -- Delete the inserted lines
+    vim.api.nvim_buf_set_lines(bufnr, start_line, end_line, false, {})
+
+    -- Clear the namespace (highlights)
+    vim.api.nvim_buf_clear_namespace(bufnr, namespace, start_line, end_line)
+
+    -- Clear the stored suggestion
+    M._suggestion = nil
+
+    -- Clear the autocmd group
+    vim.cmd('augroup SuggestionAutocmd | autocmd! | augroup END')
   end
 end
 
-local function show_suggestion()
-  clear_suggestion()
-  local bufnr = vim.api.nvim_get_current_buf()
-  -- log the cursor position before moving
+-- Function to show the suggestion when triggered
+function M.show_suggestion()
+  -- Clear any existing suggestion
+  M.clear_suggestion()
 
-  -- Move cursor to the end of the line
+  -- Move cursor to end of line
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>A", true, false, true), 'n', false)
 
-  local current_cursor_pos = vim.api.nvim_win_get_cursor(0)
-  -- log the current cursor position
-  rktmb_deepseek_complete.log("Cursor position after <Esc>A: " .. vim.inspect(current_cursor_pos))
-  local suggestion = rktmb_deepseek_complete.generate_sentence()
+  -- Generate a random multiline sentence
+  local suggestion = deepseek_complete.generate_sentence()
 
-  -- Log the generated suggestion for debugging
-  rktmb_deepseek_complete.log("Generated suggestion: " .. suggestion)
+  -- Get current buffer and cursor position
+  local bufnr = vim.api.nvim_get_current_buf()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local line = cursor[1] - 1  -- Zero-based index
 
-  local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
-  _G.current_extmarks = {}
+  -- Split the suggestion into lines
+  local lines = vim.split(suggestion, '\n', true)
 
-  -- Set the extmark *at the current cursor position*
-  local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, current_cursor_pos[1] - 1, current_cursor_pos[2], {
-    virt_text = { { suggestion, "InlineSuggestion" } },
-    virt_text_pos = 'eol',  -- Position the suggestion at the end of the line
-    hl_mode = 'combine',     -- Combine highlight with existing text
-  })
+  -- Insert the suggestion lines after the current line
+  vim.api.nvim_buf_set_lines(bufnr, line + 1, line + 1, false, lines)
 
-  table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
+  -- Apply grey color (#808080) to the inserted text
+  local namespace = vim.api.nvim_create_namespace('suggestion_ns')
+  local hl_group = 'SuggestionGrey'
 
-  -- Log the extmark ID for debugging
-  rktmb_deepseek_complete.log("Set extmark ID: " .. extmark_id)
+  -- Define the highlight group for grey color
+  vim.cmd('highlight ' .. hl_group .. ' guifg=#808080')
 
-  -- Move the cursor back to the end of the line
-  vim.api.nvim_feedkeys("a", 'n', false)
+  -- Apply the highlight to each line of the suggestion
+  for i = 1, #lines do
+    vim.api.nvim_buf_add_highlight(bufnr, namespace, hl_group, line + i, 0, -1)
+  end
+
+  -- Create an autocmd group to clear the suggestion when typing or moving
+  vim.cmd([[
+    augroup SuggestionAutocmd
+    autocmd!
+    autocmd TextChangedI,CursorMovedI * lua require('plugin.init').clear_suggestion()
+    augroup END
+    ]])
+
+  -- Store the suggestion state to clear it later
+  M._suggestion = {
+    bufnr = bufnr,
+    start_line = line + 1,
+    end_line = line + 1 + #lines,
+    namespace = namespace,
+  }
 end
 
--- Map <M-PageDown> to show_suggestion in insert mode
-vim.keymap.set('i', '<M-PageDown>', show_suggestion, { noremap = true, silent = true })
+-- Map <M-PageDown> in INSERT mode to trigger the suggestion
+vim.api.nvim_set_keymap('i', '<M-PageDown>', '<Cmd>lua require("plugin.init").show_suggestion()<CR>', { noremap = true, silent = true })
 
--- Auto command to clear the suggestion when typing
-vim.api.nvim_create_autocmd("TextChangedI", {
-  pattern = "*",
-  callback = function()
-    clear_suggestion()
-  end,
-})
-
--- Auto command to clear the suggestion when leaving insert mode
-vim.api.nvim_create_autocmd("InsertLeave", {
-  pattern = "*",
-  callback = function()
-    clear_suggestion()
-  end,
-})
+return M
 
