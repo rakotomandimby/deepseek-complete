@@ -1,6 +1,9 @@
 local rktmb_deepseek_complete = require("rktmb-deepseek-complete")
 rktmb_deepseek_complete.log("Entered init.lua")
 
+-- Define a highlight group for the inline suggestion
+vim.api.nvim_set_hl(0, "InlineSuggestion", { fg = "#808080", bg = "NONE" }) -- Grey color
+
 _G.completion_handler = nil
 _G.current_extmark = nil -- Store the extmark ID
 
@@ -20,10 +23,9 @@ vim.api.nvim_create_autocmd("InsertEnter", {
                 _G.current_extmark = nil
             end
 
-
             local ns_id = vim.api.nvim_create_namespace("rktmb-deepseek-complete-ns")
             local extmark_id = vim.api.nvim_buf_set_extmark(0, ns_id, vim.api.nvim_win_get_cursor(0)[1] - 1, current_col, {
-                virt_text = {{suggestion, "in-completion-item"}},
+                virt_text = {{suggestion, "InlineSuggestion"}}, -- Use the defined highlight group
                 virt_text_pos = "overlay",
                 hl_mode = "combine" -- Important for proper highlighting
             })
@@ -52,4 +54,3 @@ vim.api.nvim_create_autocmd("InsertLeave", {
         end
     end
 })
-
