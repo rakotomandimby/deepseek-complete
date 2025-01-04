@@ -4,7 +4,7 @@ rktmb_deepseek_complete.log("Entered init.lua")
 vim.api.nvim_create_autocmd("InsertEnter", {
     pattern = "*",
     callback = function()
-        vim.keymap.set("i", "<C-c>", function()
+        vim.keymap.set("i", "<M-PageDown>", function()
             local current_line = vim.api.nvim_get_current_line()
             local current_col = vim.api.nvim_win_get_cursor(0)[2]
             local current_word = vim.fn.expand("<cword>")
@@ -21,7 +21,7 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 vim.api.nvim_create_autocmd("InsertLeave", {
     pattern = "*",
     callback = function()
-        vim.keymap.del("i", "<C-c>")
+        vim.keymap.del("i", "<M-PageDown>")
     end
 })
 
