@@ -23,36 +23,33 @@ local function show_suggestion()
 
   -- Get the current buffer and cursor position *BEFORE* moving the cursor
   local bufnr = vim.api.nvim_get_current_buf()
-  local current_cursor_pos = vim.api.nvim_win_get_cursor(0) -- Get cursor pos before moving
-
-  -- adding some debug logs
-  rktmb_deepseek_complete.log("Cursor position before <Esc>A: " .. vim.inspect(current_cursor_pos))
 
   -- Use a callback to ensure the cursor position is retrieved *after* the keys are processed
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>A", true, false, true), 'n', false, function()
-    -- adding some debug logs *inside the callback*
-    local current_cursor_pos = vim.api.nvim_win_get_cursor(0) -- Get cursor pos after moving
-    rktmb_deepseek_complete.log("Cursor position after <Esc>A: " .. vim.inspect(current_cursor_pos))
+  vim.api.nvim_feedkeys(
+    vim.api.nvim_replace_termcodes("<Esc>A", true, false, true),
+    'n',
+    false,
+    function()
+      local current_cursor_pos = vim.api.nvim_win_get_cursor(0) -- Get cursor pos after moving
 
-    -- Generate a random sentence
-    local suggestion = rktmb_deepseek_complete.generate_sentence()
-    rktmb_deepseek_complete.log("Generated suggestion: " .. suggestion)
+      -- Generate a random sentence
+      local suggestion = rktmb_deepseek_complete.generate_sentence()
 
-    -- Create a namespace for our extmarks
-    local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
+      -- Create a namespace for our extmarks
+      local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
-    _G.current_extmarks = {}
+      _G.current_extmarks = {}
 
-    -- Set the extmark *at the current cursor position*
-    local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, current_cursor_pos[1] - 1, current_cursor_pos[2], {
-      virt_text = { { suggestion, "InlineSuggestion" } },
-      virt_text_pos = 'overlay',
-    })
-    table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
+      -- Set the extmark *at the current cursor position*
+      local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, current_cursor_pos[1] - 1, current_cursor_pos[2], {
+        virt_text = { { suggestion, "InlineSuggestion" } },
+        virt_text_pos = 'overlay',
+      })
+      table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
 
-    -- Return to insert mode
-    vim.api.nvim_feedkeys("a", 'n', false)
-  end)
+      -- Return to insert mode
+      vim.api.nvim_feedkeys("a", 'n', false)
+    end)
 end
 
 
