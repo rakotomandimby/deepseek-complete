@@ -20,28 +20,31 @@ end
 local function show_suggestion()
   clear_suggestion()
   local bufnr = vim.api.nvim_get_current_buf()
-  
+  -- log the cursor position before moving
+
   -- Move cursor to the end of the line
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>A", true, false, true), 'n', false)
-  
+
   local current_cursor_pos = vim.api.nvim_win_get_cursor(0)
+  -- log the current cursor position
+  rktmb_deepseek_complete.log("Cursor position after <Esc>A: " .. vim.inspect(current_cursor_pos))
   local suggestion = rktmb_deepseek_complete.generate_sentence()
-  
+
   -- Log the generated suggestion for debugging
   rktmb_deepseek_complete.log("Generated suggestion: " .. suggestion)
 
   local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
   _G.current_extmarks = {}
-  
+
   -- Set the extmark *at the current cursor position*
   local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, current_cursor_pos[1] - 1, current_cursor_pos[2], {
     virt_text = { { suggestion, "InlineSuggestion" } },
     virt_text_pos = 'eol',  -- Position the suggestion at the end of the line
     hl_mode = 'combine',     -- Combine highlight with existing text
   })
-  
+
   table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
-  
+
   -- Log the extmark ID for debugging
   rktmb_deepseek_complete.log("Set extmark ID: " .. extmark_id)
 
