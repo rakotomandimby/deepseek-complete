@@ -10,13 +10,19 @@ _G.suggest_random_sentence = function()
 
   local sentence = rktmb_deepseek_complete.generate_sentence()
   local lines = vim.split(sentence, "\n", true)
+  -- log the lines
+  rktmb_deepseek_complete.log("Lines:")
+  for _, line in ipairs(lines) do
+    rktmb_deepseek_complete.log(line)
+  end
+  rktmb_deepseek_complete.log("")
 
   local opts = {
     kind = "plaintext",
     menu = "[Random]",  -- Optional: Add a menu label
   }
 
-    vim.api.nvim_buf_set_extmark(0, ns_id, current_row - 1, #current_line, {virt_text = {{' ', "Normal"}}, virt_text_pos='overlay'}) -- trick to push down the lines below
+  vim.api.nvim_buf_set_extmark(0, ns_id, current_row - 1, #current_line, {virt_text = {{' ', "Normal"}}, virt_text_pos='overlay'}) -- trick to push down the lines below
 
   vim.fn.complete(0, {
       { word = lines[1], opts = opts }, -- First line as the main completion item
