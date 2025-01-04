@@ -28,19 +28,13 @@ local function show_suggestion()
   -- Move the cursor to the end of the line
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc><End>a", true, false, true), 'n', true)
 
+
   -- Generate a random sentence
   local suggestion = rktmb_deepseek_complete.generate_sentence()
   rktmb_deepseek_complete.log("Generated suggestion: " .. suggestion)
 
   -- Split the suggestion into lines
   local lines = vim.split(suggestion, "\n")
-
-
-  -- Get the cursor position *AFTER* moving to the end of the line.  Crucially, use initial_cursor_pos[1] for the line!
-  local cursor_pos = vim.api.nvim_win_get_cursor(0)
-  local cursor_line = initial_cursor_pos[1] -1 -- zero-indexed
-  local cursor_col = cursor_pos[2]
-
 
   -- Create a namespace for our extmarks
   local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
@@ -49,12 +43,13 @@ local function show_suggestion()
   _G.current_extmarks = {}
 
   for i, line in ipairs(lines) do
-    local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, cursor_line + i -1, cursor_col, {  -- cursor_line is already zero-indexed
-      virt_text = { { line, "InlineSuggestion" } },
-      virt_text_pos = 'overlay',
-    })
-    table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
+      local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, initial_cursor_pos[1] + i - 1, initial_cursor_pos[2] - 1, {  -- Use initial_cursor_pos for both line *and* column, and adjust for zero-indexing
+        virt_text = { { line, "InlineSuggestion" } },
+        virt_text_pos = 'overlay',
+      })
+      table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
   end
+
 end
 
 -- Map <M-PageDown> to show_suggestion in insert mode
@@ -75,4 +70,8 @@ vim.api.nvim_create_autocmd("InsertLeave", {
     clear_suggestion()
   end,
 })
+
+
+
+
 
