@@ -16,7 +16,7 @@ _G.suggest_random_sentence = function()
   -- Construct virtual text chunks with proper newlines
   local chunks = {}
   for _, line in ipairs(lines) do
-    table.insert(chunks, {line .. "\n", "Comment"})
+    table.insert(chunks, {line .. '\n', "Comment"})
     -- Log the line
     rktmb_deepseek_complete.log(line)
     -- Add newline chunk after each line *except* the last
