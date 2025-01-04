@@ -17,35 +17,35 @@ local function clear_suggestion()
   end
 end
 
--- Function to show the suggestion when triggered
 local function show_suggestion()
   clear_suggestion()
-
-  -- Get the current buffer and cursor position *BEFORE* moving the cursor
   local bufnr = vim.api.nvim_get_current_buf()
-
-  -- Move the cursor to the end of the line
+  
+  -- Move cursor to the end of the line
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>A", true, false, true), 'n', false)
-
-  -- Get the current cursor position after moving
+  
   local current_cursor_pos = vim.api.nvim_win_get_cursor(0)
-
-  -- Generate a random sentence
   local suggestion = rktmb_deepseek_complete.generate_sentence()
+  
+  -- Log the generated suggestion for debugging
+  rktmb_deepseek_complete.log("Generated suggestion: " .. suggestion)
 
-  -- Create a namespace for our extmarks
   local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
-
   _G.current_extmarks = {}
-
+  
   -- Set the extmark *at the current cursor position*
   local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, current_cursor_pos[1] - 1, current_cursor_pos[2], {
     virt_text = { { suggestion, "InlineSuggestion" } },
-    virt_text_pos = 'overlay',
+    virt_text_pos = 'eol',  -- Position the suggestion at the end of the line
+    hl_mode = 'combine',     -- Combine highlight with existing text
   })
+  
   table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
+  
+  -- Log the extmark ID for debugging
+  rktmb_deepseek_complete.log("Set extmark ID: " .. extmark_id)
 
-  -- Return to insert mode
+  -- Move the cursor back to the end of the line
   vim.api.nvim_feedkeys("a", 'n', false)
 end
 
@@ -67,3 +67,4 @@ vim.api.nvim_create_autocmd("InsertLeave", {
     clear_suggestion()
   end,
 })
+
