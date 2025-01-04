@@ -25,6 +25,12 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 
             local suggestion = rktmb_deepseek_complete.generate_sentence()
             local lines = vim.split(suggestion, "\n")
+            -- log the lines
+            rktmb_deepseek_complete.log("Lines:")
+            for _, line in ipairs(lines) do
+                rktmb_deepseek_complete.log(line)
+            end
+            rktmb_deepseek_complete.log("End of lines")
 
             clear_suggestion()
 
