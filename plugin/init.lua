@@ -23,11 +23,8 @@ local function show_suggestion()
 
   -- Get the current buffer and cursor position *BEFORE* moving the cursor
   local bufnr = vim.api.nvim_get_current_buf()
-  local initial_cursor_pos = vim.api.nvim_win_get_cursor(0)
 
-  -- Move the cursor to the end of the line
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc><End>a", true, false, true), 'n', true)
-
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>A", true, false, true), 'n', true)
 
   -- Generate a random sentence
   local suggestion = rktmb_deepseek_complete.generate_sentence()
@@ -42,13 +39,16 @@ local function show_suggestion()
   -- Set extmarks for each line of the suggestion
   _G.current_extmarks = {}
 
+  local current_cursor_pos = vim.api.nvim_win_get_cursor(0)
+
   for i, line in ipairs(lines) do
-      local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, initial_cursor_pos[1] + i - 1, initial_cursor_pos[2] - 1, {  -- Use initial_cursor_pos for both line *and* column, and adjust for zero-indexing
-        virt_text = { { line, "InlineSuggestion" } },
-        virt_text_pos = 'overlay',
-      })
-      table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
+    local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, current_cursor_pos[1] + i - 1, current_cursor_pos[2] -1 , {
+      virt_text = { { line, "InlineSuggestion" } },
+      virt_text_pos = 'overlay',
+    })
+    table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
   end
+
 
 end
 
