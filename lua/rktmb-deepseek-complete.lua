@@ -12,19 +12,19 @@ end
 function M.generate_sentence()
   M.log("Entered generate_sentence()")
   local sentences = {
-    "The quick brown fox jumps over the lazy dog.",
-    "The five boxing wizards jump quickly.",
-    "Pack my box with five dozen liquor jugs.",
-    "How vexingly quick daft zebras jump.",
-    "Pack my box with five dozen liquor jugs.",
-    "How vexingly quick daft zebras jump.",
-    "What do you get if you multiply six by nine.",
-    "If six is nine, what do you get?",
-    "If six is nine, what do you get?",
-    "I'm not a number, I'm a free man.",
-    "I'm not a number, I'm a free man.",
-    "Hey, I'm a free man. What do you get if you multiply six by nine?",
-    "Hey, I'm a free man. What do you get if you multiply six by nine?",
+    "The quick brown \nfox jumps over the lazy dog.",
+    "The five boxing \nwizards jump quickly.",
+    "Pack my box with \nfive dozen liquor jugs.",
+    "How vexingly quick \ndaft zebras jump.",
+    "Pack my box with five \ndozen liquor jugs.",
+    "How vexingly quick \ndaft zebras jump.",
+    "What do you get if \nyou multiply six by nine.",
+    "If six is nine, \nwhat do you get?",
+    "If six is nine, \nwhat do you get?",
+    "I'm not a number, \nI'm a free man.",
+    "I'm not a number, \nI'm a free man.",
+    "Hey, I'm a free man. \nWhat do you get if you multiply six by nine?",
+    "Hey, I'm a free man. \nWhat do you get if you multiply six by nine?",
   }
   return sentences[math.random(#sentences)]
 end
