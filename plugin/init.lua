@@ -4,7 +4,7 @@ rktmb_deepseek_complete.log("Entered init.lua")
 vim.api.nvim_set_hl(0, "InlineSuggestion", { fg = "#808080", bg = "NONE" })
 
 _G.completion_handler = nil
-_G.current_extmarks = nil -- Changed to hold a table of extmarks
+_G.current_extmarks = nil
 
 local function clear_suggestion()
     if _G.current_extmarks then
@@ -35,10 +35,13 @@ vim.api.nvim_create_autocmd("InsertEnter", {
             clear_suggestion()
 
             local ns_id = vim.api.nvim_create_namespace("rktmb-deepseek-complete-ns")
-            _G.current_extmarks = {} -- Initialize the table
+            _G.current_extmarks = {}
+
+            -- Adjust the column index to be within the line length
+            local adjusted_col = math.min(current_col, #current_line)
 
             for i, line in ipairs(lines) do
-                local extmark_id = vim.api.nvim_buf_set_extmark(0, ns_id, vim.api.nvim_win_get_cursor(0)[1] - 1 + i -1 , current_col, {
+                local extmark_id = vim.api.nvim_buf_set_extmark(0, ns_id, vim.api.nvim_win_get_cursor(0)[1] - 1 + i - 1, adjusted_col, {
                     virt_text = {{line, "InlineSuggestion"}},
                     virt_text_pos = "overlay",
                     hl_mode = "combine"
@@ -47,13 +50,10 @@ vim.api.nvim_create_autocmd("InsertEnter", {
             end
         end
 
-
         vim.keymap.set("i", "<M-PageDown>", function()
             vim.defer_fn(_G.completion_handler, 0)
             return ""
         end, { noremap = true, expr = true, silent = true })
-
-        -- Removed duplicate <M-PageDown> mapping
 
         vim.api.nvim_create_autocmd("TextChangedI", {
             buffer = 0,
@@ -62,7 +62,6 @@ vim.api.nvim_create_autocmd("InsertEnter", {
                 clear_suggestion()
             end
         })
-
     end
 })
 
@@ -74,3 +73,4 @@ vim.api.nvim_create_autocmd("InsertLeave", {
         clear_suggestion()
     end
 })
+
