@@ -17,7 +17,8 @@ _G.suggest_random_sentence = function()
   local chunks = {}
   for _, line in ipairs(lines) do
     table.insert(chunks, {line, "Comment"})  -- "Comment" highlight for grey
-
+    -- Log the line
+    rktmb_deepseek_complete.log(line)
     -- Add newline chunk after each line *except* the last
     if _ < #lines then
       table.insert(chunks, {"\n", "Comment"}) -- Actual newline character
