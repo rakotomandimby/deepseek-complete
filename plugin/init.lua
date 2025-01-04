@@ -1,81 +1,71 @@
 local rktmb_deepseek_complete = require("rktmb-deepseek-complete")
 rktmb_deepseek_complete.log("Entered init.lua")
 
+-- Define the highlight group for the suggestion text
 vim.api.nvim_set_hl(0, "InlineSuggestion", { fg = "#808080", bg = "NONE" })
 
-_G.completion_handler = nil
+-- Global variables to keep track of extmarks
 _G.current_extmarks = nil
 
+-- Function to clear the current suggestion
 local function clear_suggestion()
   if _G.current_extmarks then
-    for _, extmark in ipairs(_G.current_extmarks) do
+    for _, extmark in pairs(_G.current_extmarks) do
       vim.api.nvim_buf_del_extmark(0, extmark.ns, extmark.id)
     end
     _G.current_extmarks = nil
   end
 end
 
-vim.api.nvim_create_autocmd("InsertEnter", {
+-- Function to show the suggestion when triggered
+local function show_suggestion()
+  clear_suggestion()
+  -- Move the cursor to the end of the line
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc><End>a", true, false, true), 'n', true)
+
+  -- Generate a random sentence
+  local suggestion = rktmb_deepseek_complete.generate_sentence()
+  rktmb_deepseek_complete.log("Generated suggestion: " .. suggestion)
+
+  -- Split the suggestion into lines
+  local lines = vim.split(suggestion, "\n")
+  -- Get the current buffer and cursor position
+  local bufnr = vim.api.nvim_get_current_buf()
+  local cursor_pos = vim.api.nvim_win_get_cursor(0)
+  local cursor_line = cursor_pos[1] - 1 -- zero-indexed
+  local cursor_col = cursor_pos[2]
+
+  -- Create a namespace for our extmarks
+  local ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
+
+  -- Set extmarks for each line of the suggestion
+  _G.current_extmarks = {}
+
+  for i, line in ipairs(lines) do
+    local extmark_id = vim.api.nvim_buf_set_extmark(bufnr, ns_id, cursor_line + i, 0, {
+      virt_text = { { line, "InlineSuggestion" } },
+      virt_text_pos = 'overlay',
+    })
+    table.insert(_G.current_extmarks, { ns = ns_id, id = extmark_id })
+  end
+end
+
+-- Map <M-PageDown> to show_suggestion in insert mode
+vim.keymap.set('i', '<M-PageDown>', show_suggestion, { noremap = true, silent = true })
+
+-- Auto command to clear the suggestion when typing
+vim.api.nvim_create_autocmd("TextChangedI", {
   pattern = "*",
   callback = function()
-    _G.completion_handler = function()
-      local current_line = vim.api.nvim_get_current_line()
-      local current_col = vim.api.nvim_win_get_cursor(0)[2]
-      local current_word = vim.fn.expand("<cword>")
-
-      local suggestion = rktmb_deepseek_complete.generate_sentence()
-      local lines = vim.split(suggestion, "\n")
-      -- log the lines
-      rktmb_deepseek_complete.log("Lines:")
-      for _, line in ipairs(lines) do
-        rktmb_deepseek_complete.log(line)
-      end
-      rktmb_deepseek_complete.log("End of lines")
-
-      clear_suggestion()
-
-      local ns_id = vim.api.nvim_create_namespace("rktmb-deepseek-complete-ns")
-      _G.current_extmarks = {}
-
-      local adjusted_col = math.min(current_col, #current_line)
-      adjusted_col = math.max(adjusted_col, 0)
-
-      for i, line in ipairs(lines) do
-        local line_index = vim.api.nvim_win_get_cursor(0)[1] - 1 + i - 1
-
-        if line_index < vim.api.nvim_buf_line_count(0) then
-          local extmark_id = vim.api.nvim_buf_set_extmark(0, ns_id, line_index, adjusted_col, {
-            virt_text = {{line, "InlineSuggestion"}},
-            virt_text_pos = "overlay",
-            hl_mode = "combine"
-          })
-          table.insert(_G.current_extmarks, {ns = ns_id, id = extmark_id})
-        end
-      end
-
-    end
-
-    vim.keymap.set("i", "<M-PageDown>", function()
-      vim.defer_fn(_G.completion_handler, 0)
-      return ""
-    end, { noremap = true, expr = true, silent = true })
-
-    vim.api.nvim_create_autocmd("TextChangedI", {
-      buffer = 0,
-      once = true,
-      callback = function()
-        clear_suggestion()
-      end
-    })
-  end
+    clear_suggestion()
+  end,
 })
 
+-- Auto command to clear the suggestion when leaving insert mode
 vim.api.nvim_create_autocmd("InsertLeave", {
   pattern = "*",
   callback = function()
-    vim.keymap.del("i", "<M-PageDown>")
-    _G.completion_handler = nil
     clear_suggestion()
-  end
+  end,
 })
 
