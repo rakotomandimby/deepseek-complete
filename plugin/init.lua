@@ -12,6 +12,14 @@ _G.suggest_random_sentence = function()
   local current_line = vim.api.nvim_get_current_line()
   vim.api.nvim_win_set_cursor(0, {current_row, #current_line})
 
+  -- Get the text before and after the cursor
+  local text_before_cursor = string.sub(current_line, 1, vim.api.nvim_win_get_cursor(0)[2])
+  local text_after_cursor = string.sub(current_line, vim.api.nvim_win_get_cursor(0)[2] + 1)
+
+  -- Log the text before and after the cursor
+  rktmb_deepseek_complete.log("Text before cursor: " .. text_before_cursor)
+  rktmb_deepseek_complete.log("Text after cursor: " .. text_after_cursor)
+
   -- Generate the random sentence
   local sentence = rktmb_deepseek_complete.generate_sentence()
   local lines = vim.split(sentence, "\n", true)
