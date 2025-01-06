@@ -34,7 +34,7 @@ _G.suggest_random_sentence = function()
   local deepseek_request_body = {
     model = "deepseek-chat",
     prompt = text_before_cursor,
-    echo = true,
+    echo = false,
     frequency_penalty = 0,
     max_tokens = 8192,
     presence_penalty = 0,
@@ -64,7 +64,7 @@ _G.suggest_random_sentence = function()
       else
         -- Log the error
         rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
-        rktmb_deepseek_complete.log("Response body:\n" .. response.body.choices[1].text)
+        rktmb_deepseek_complete.log("Response body:\n" .. response.body)
       end
     end
   })
