@@ -6,13 +6,15 @@ _G.current_extmark_id = nil
 _G.current_suggestion = nil
 
 _G.suggest_random_sentence = function()
-  local current_row, current_col = table.unpack(vim.api.nvim_win_get_cursor(0))
+  local cursor_position_table=vim.api.nvim_win_get_cursor(0)
+  local current_row, current_col = cursor_position_table.unpack()
 
   -- Ensure the cursor is at the end of the current line
   local current_line = vim.api.nvim_get_current_line()
   vim.api.nvim_win_set_cursor(0, {current_row, #current_line})
 
-  current_row, current_col = table.unpack(vim.api.nvim_win_get_cursor(0))
+  cursor_position_table=vim.api.nvim_win_get_cursor(0)
+  current_row, current_col = cursor_position_table.unpack()
   -- Get buffer content before and after cursor
   local current_buffer = vim.api.nvim_get_current_buf()
   local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, false)
@@ -25,7 +27,7 @@ _G.suggest_random_sentence = function()
 
   -- Generate the random sentence
   local sentence = rktmb_deepseek_complete.generate_sentence()
-  local lines = vim.split(sentence, "\n", true)
+  lines = vim.split(sentence, "\n", true)
 
   -- Store the suggestion globally
   _G.current_suggestion = lines
