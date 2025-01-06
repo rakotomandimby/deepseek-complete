@@ -61,9 +61,12 @@ _G.suggest_random_sentence = function()
       if response.status == 200 then
         -- Log the API response
         rktmb_deepseek_complete.log("DeepSeek API response:\n" .. response.body)
+        -- json decode the response body
+        local body = vim.fn.json_decode(response.body)
+
         -- response.body is a Lua table of choices
         -- Loop on the choices and display them
-        for _, choice in pairs(response.body.choices) do
+        for _, choice in pairs(body.choices) do
           rktmb_deepseek_complete.log(choice.text)
           rktmb_deepseek_complete.log("===========================")
         end
