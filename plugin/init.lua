@@ -170,6 +170,9 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   end
 })
 
-vim.api.nvim_set_keymap("i", "<M-Space>", "<Cmd>lua suggest_random_sentence()<CR>", { noremap = true, silent = true })
+-- unmap whatever is mapped to <C-Space>
+vim.api.nvim_del_keymap("i", "<C-Space>")
+
+vim.api.nvim_set_keymap("i", "<C-Space>", "<Cmd>lua suggest_random_sentence()<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua accept_suggestion()<CR>",      { noremap = true, silent = true })
 
