@@ -2,6 +2,9 @@ local rktmb_deepseek_complete = require("rktmb-deepseek-complete")
 
 _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
+_G.current_extmark_id = nil
+_G.current_suggestion = nil
+
 _G.suggest_random_sentence = function()
   local current_row = vim.api.nvim_win_get_cursor(0)[1]
 
@@ -12,6 +15,9 @@ _G.suggest_random_sentence = function()
   -- Generate the random sentence
   local sentence = rktmb_deepseek_complete.generate_sentence()
   local lines = vim.split(sentence, "\n", true)
+
+  -- Store the suggestion globally
+  _G.current_suggestion = lines
 
   -- Construct virt_lines with proper formatting
   local virt_lines = {}
@@ -26,6 +32,9 @@ _G.suggest_random_sentence = function()
     hl_mode = 'combine' -- Combine with existing text highlighting
   })
 
+  -- Store the extmark ID globally
+  _G.current_extmark_id = extmark_id
+
   -- Clear the suggestion on text change or insert leave
   local augroup_id = vim.api.nvim_create_augroup("RktmbDeepseekCompleteSuggestions", { clear = true })
   vim.api.nvim_create_autocmd({ "TextChangedI", "InsertLeave" }, {
@@ -33,9 +42,36 @@ _G.suggest_random_sentence = function()
     buffer = 0,
     callback = function()
       vim.api.nvim_buf_del_extmark(0, ns_id, extmark_id)
+      _G.current_extmark_id = nil
+      _G.current_suggestion = nil
       vim.api.nvim_del_augroup_by_id(augroup_id)
     end
   })
+end
+
+_G.accept_suggestion = function()
+  if not _G.current_extmark_id or not _G.current_suggestion then
+    -- No active suggestion to accept
+    return
+  end
+
+  local bufnr = 0
+  local cursor_pos = vim.api.nvim_win_get_cursor(0)
+  local current_line = cursor_pos[1]
+
+  -- Insert the suggestion lines into the buffer
+  -- Lines are inserted below the current line
+  vim.api.nvim_buf_set_lines(bufnr, current_line, current_line, false, _G.current_suggestion)
+
+  -- Remove the extmark (inline suggestion)
+  vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
+
+  -- Clear the stored extmark ID and suggestion
+  _G.current_extmark_id = nil
+  _G.current_suggestion = nil
+
+  -- Optional: Move the cursor to the end of the inserted text
+  vim.api.nvim_win_set_cursor(0, { current_line + #_G.current_suggestion, 0 })
 end
 
 vim.api.nvim_create_autocmd("InsertLeave", {
@@ -45,4 +81,6 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   end
 })
 
-vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua suggest_random_sentence()<CR>", {noremap = true, silent = true})
+vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua suggest_random_sentence()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", "<M-PageUp>", "<Cmd>lua accept_suggestion()<CR>", { noremap = true, silent = true })
+
