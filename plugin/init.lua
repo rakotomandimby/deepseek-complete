@@ -64,7 +64,7 @@ _G.suggest_random_sentence = function()
       else
         -- Log the error
         rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
-        rktmb_deepseek_complete.log("Response body:\n" .. response.body)
+        rktmb_deepseek_complete.log("Response body:\n" .. response.body.choices[1].text)
       end
     end
   })
