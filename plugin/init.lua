@@ -29,7 +29,7 @@ _G.suggest_random_sentence = function()
   local extmark_id = vim.api.nvim_buf_set_extmark(0, ns_id, current_row - 1, 0, {
     virt_lines = virt_lines,
     virt_lines_above = false, -- Place the virtual lines below the current line
-    hl_mode = 'combine' -- Combine with existing text highlighting
+    hl_mode = 'combine'       -- Combine with existing text highlighting
   })
 
   -- Store the extmark ID globally
@@ -59,17 +59,10 @@ _G.accept_suggestion = function()
   local cursor_pos = vim.api.nvim_win_get_cursor(0)
   local current_line = cursor_pos[1]
 
-  -- Insert the suggestion lines into the buffer
-  -- Lines are inserted below the current line
   vim.api.nvim_buf_set_lines(bufnr, current_line, current_line, false, _G.current_suggestion)
-
-  -- Optional: Move the cursor to the end of the inserted text
   vim.api.nvim_win_set_cursor(0, { current_line + #_G.current_suggestion, 0 })
-
-  -- Remove the extmark (inline suggestion)
   vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
 
-  -- Clear the stored extmark ID and suggestion
   _G.current_extmark_id = nil
   _G.current_suggestion = nil
 end
