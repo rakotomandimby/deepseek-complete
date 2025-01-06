@@ -7,22 +7,16 @@ _G.current_extmark_id = nil
 _G.current_suggestion = nil
 
 local function process_deepseek_response(response)
-  rktmb_deepseek_complete.log("DeepSeek API response handler called")
-  -- Log the API response
-  rktmb_deepseek_complete.log("DeepSeek API response from handler:\n" .. tostring(response.status))
   if response.status == 200 then
-    -- Use vim.schedule_wrap to defer the json_decode call
-    vim.schedule_wrap(function()
-      local body = vim.fn.json_decode(response.body)
-      if body.choices and #body.choices > 0 then
-        for _, choice in pairs(body.choices) do
-          rktmb_deepseek_complete.log(choice.text)
-          rktmb_deepseek_complete.log("===========================")
-        end
-      else
-        rktmb_deepseek_complete.log("DeepSeek API returned no choices.")
+    local body = vim.fn.json_decode(response.body)
+    if body.choices and #body.choices > 0 then
+      for _, choice in pairs(body.choices) do
+        rktmb_deepseek_complete.log(choice.text)
+        rktmb_deepseek_complete.log("===========================")
       end
-    end)
+    else
+      rktmb_deepseek_complete.log("DeepSeek API returned no choices.")
+    end
   else
     -- Log the error
     rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
@@ -91,7 +85,7 @@ _G.suggest_random_sentence = function()
     end
   })
 
--- Generate the random sentence
+  -- Generate the random sentence
   local sentence = rktmb_deepseek_complete.generate_sentence()
   lines = vim.split(sentence, "\n", true)
 
