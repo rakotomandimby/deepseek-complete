@@ -41,7 +41,7 @@ _G.suggest_random_sentence = function()
     stop = nil,
     stream = false,
     stream_options = nil,
-    suffix = text_after_cursor,
+    -- suffix = text_after_cursor,
     temperature = 1,
     top_p = 1
   }
@@ -61,6 +61,12 @@ _G.suggest_random_sentence = function()
       if response.status == 200 then
         -- Log the API response
         rktmb_deepseek_complete.log("DeepSeek API response:\n" .. response.body)
+        -- response.body is a Lua table of choices
+        -- Loop on the choices and display them
+        for _, choice in ipairs(response.body.choices) do
+          rktmb_deepseek_complete.log(choice.text)
+          rktmb_deepseek_complete.log("===========================")
+        end
       else
         -- Log the error
         rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
