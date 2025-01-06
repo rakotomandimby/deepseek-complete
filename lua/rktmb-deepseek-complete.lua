@@ -32,11 +32,6 @@ function M.get_open_buffers()
     end
   end
 
-  -- Sort buffers by most recently used using 'lastused'
-  table.sort(buffers, function(a, b)
-    return vim.api.nvim_buf_get_option(a, "lastused") > vim.api.nvim_buf_get_option(b, "lastused")
-  end)
-
   -- log the list of buffers
   for _, buf in ipairs(buffers) do
     M.log(vim.api.nvim_buf_get_name(buf))
