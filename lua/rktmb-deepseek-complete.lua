@@ -30,4 +30,20 @@ function M.generate_sentence()
   return sentences[math.random(#sentences)]
 end
 
+function M.remove_markdown_start_code_block_delimiter(text)
+  local lines = vim.split(text, "\n", true)
+  if lines[1]:sub(1, 3) == "```" then
+    table.remove(lines, 1)
+  end
+  return table.concat(lines, "\n")
+end
+
+function M.remove_markdown_end_code_block_delimiter(text)
+  local lines = vim.split(text, "\n", true)
+  if lines[#lines]:sub(-3) == "```" then
+    lines[#lines] = nil
+  end
+  return table.concat(lines, "\n")
+end
+
 return M
