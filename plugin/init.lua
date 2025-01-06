@@ -112,16 +112,7 @@ _G.suggest = function()
     stream_options = nil,
     temperature = 1,
     top_p = 1,
-    messages = {
-      { role = "system", content = "You are a software developer assistant that will complete code based on the context provided. Just answer with indented raw code, NO explanations, NO markdown formatting." },
-      { role = "user", content = "I need you to complete code." },
-      { role = "assistant", content = "What is before the cursor?" },
-      { role = "user", content = text_before_cursor },
-      { role = "assistant", content = "What is after the cursor?" },
-      { role = "user", content = text_after_cursor },
-      { role = "assistant", content = "What line do you want me to continue?" },
-      { role = "user", content = "Continue this line: \n" .. line_the_cursor_is_on }
-    }
+    messages = rktmb_deepseek_complete.build_messages_table(text_before_cursor, text_after_cursor, line_the_cursor_is_on)
   }
 
   -- Retrieve the API token
@@ -141,7 +132,7 @@ _G.suggest = function()
   })
 end
 
-_G.accept_suggestion = function()
+_G.accept_the_whole_suggestion = function()
   if not _G.current_extmark_id or not _G.current_suggestion then
     -- No active suggestion to accept
     return
@@ -172,5 +163,5 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 
 
 vim.api.nvim_set_keymap("i", "<M-ESC>", "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua accept_suggestion()<CR>",      { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua accept_the_whole_suggestion()<CR>",      { noremap = true, silent = true })
 
