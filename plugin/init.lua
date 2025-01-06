@@ -236,4 +236,4 @@ end
 
 vim.api.nvim_set_keymap("i", user_opts.suggest_keymap,      "<Cmd>lua suggest()<CR>",                     { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", user_opts.accept_all_keymap,   "<Cmd>lua accept_the_whole_suggestion()<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("i", user_opts.accept_line_keymap,  "<Cmd>lua accept_one_suggestion_line()<BR>",  { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", user_opts.accept_line_keymap,  "<Cmd>lua accept_one_suggestion_line()<CR>",  { noremap = true, silent = true })
