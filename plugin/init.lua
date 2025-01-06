@@ -6,6 +6,27 @@ _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 _G.current_extmark_id = nil
 _G.current_suggestion = nil
 
+-- local function that removes the first line if the parameter starts with "```"
+-- it will be easier if we store each line in a table
+-- and then we can remove the first line
+local function remove_markdown_start_code_block_delimiter(text)
+  local lines = vim.split(text, "\n", true)
+  if lines[1]:sub(1, 3) == "```" then
+    table.remove(lines, 1)
+  end
+  return table.concat(lines, "\n")
+end
+
+-- same as remove_markdown_start_code_block_delimiter but for the closing "```"
+local function remove_markdown_end_code_block_delimiter(text)
+  local lines = vim.split(text, "\n", true)
+  if lines[#lines]:sub(-3) == "```" then
+    lines[#lines] = nil
+  end
+  return table.concat(lines, "\n")
+end
+
+
 local function process_deepseek_response(response)
   if response.status == 200 then
     rktmb_deepseek_complete.log("DeepSeek status: 200")
@@ -14,8 +35,10 @@ local function process_deepseek_response(response)
       local body = vim.fn.json_decode(response.body)
       if body.choices and #body.choices > 0 then
         for _, choice in pairs(body.choices) do
-          rktmb_deepseek_complete.log(choice.message.content)
-          rktmb_deepseek_complete.log("===========================")
+          local m = choice.message.content
+          m = remove_markdown_start_code_block_delimiter(m)
+          m = remove_markdown_end_code_block_delimiter(m)
+          rktmb_deepseek_complete.log(m)
         end
       else
         rktmb_deepseek_complete.log("DeepSeek API returned no choices.")
