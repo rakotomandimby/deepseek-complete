@@ -94,15 +94,15 @@ _G.suggest_random_sentence = function()
   local line_the_cursor_is_on = string.sub(lines[current_row], current_col + 1)
 
   -- Log the text before and after the cursor (optional)
-  rktmb_deepseek_complete.log("Text before cursor:\n" .. text_before_cursor)
-  rktmb_deepseek_complete.log("Text after cursor:\n" .. text_after_cursor)
+  rktmb_deepseek_complete.log("Text before cursor:\n" .. text_before_cursor .. "\n=====================================")
+  rktmb_deepseek_complete.log("Text after cursor:\n" .. text_after_cursor   .. "\n=====================================")
+  rktmb_deepseek_complete.log("Line the cursor is on:\n" .. line_the_cursor_is_on .. "\n=====================================")
 
-  -- Make the DeepSeek API request
   local deepseek_request_body = {
     model = "deepseek-chat",
     echo = false,
     frequency_penalty = 0,
-    max_tokens = 1024,
+    max_tokens = 4096,
     presence_penalty = 0,
     stop = nil,
     stream = false,
