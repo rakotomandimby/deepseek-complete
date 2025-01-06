@@ -6,6 +6,27 @@ _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 _G.current_extmark_id = nil
 _G.current_suggestion = nil
 
+local function process_deepseek_response(response)
+  if response.status == 200 then
+    -- Use vim.schedule_wrap to defer the json_decode call
+    vim.schedule_wrap(function()
+      local body = vim.fn.json_decode(response.body)
+      if body.choices and #body.choices > 0 then
+        for _, choice in pairs(body.choices) do
+          rktmb_deepseek_complete.log(choice.text)
+          rktmb_deepseek_complete.log("===========================")
+        end
+      else
+        rktmb_deepseek_complete.log("DeepSeek API returned no choices.")
+      end
+    end)
+  else
+    -- Log the error
+    rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
+    rktmb_deepseek_complete.log("Response body:\n" .. response.body)
+  end
+end
+
 _G.suggest_random_sentence = function()
 
   local cursor_position_table = vim.api.nvim_win_get_cursor(0)
@@ -27,9 +48,6 @@ _G.suggest_random_sentence = function()
   local text_after_cursor = string.sub(lines[current_row], current_col + 1) .. "\n" .. table.concat(lines, "\n", current_row + 1)
   local line_the_cursor_is_on = string.sub(lines[current_row], current_col + 1)
 
-  -- Log the content of text_before_cursor and text_after_cursor
-  rktmb_deepseek_complete.log("Text before cursor:\n" .. text_before_cursor)
-  rktmb_deepseek_complete.log("Text after cursor:\n" .. text_after_cursor)
 
   -- Make the DeepSeek API request
   local deepseek_request_body = {
@@ -46,8 +64,10 @@ _G.suggest_random_sentence = function()
     messages = {
       {role = "system", content = "You are a software developer asssistant that will complete code based on the context provided. Just answer with raw code, no explanations needed, no markdown formatting."},
       {role = "user", content = "I need you to complete code."},
-      {role = "assistant", content = "Give me the context and I will complete the code."},
+      {role = "assistant", content = "Give me the contex. What is before the cursor?"},
       {role = "user", content = text_before_cursor},
+      {role = "assistant", content = "What is after the cursor?"},
+      {role = "user", content = text_after_cursor},
       {role = "assistant", content = "What do you want me to continue?"},
       {role = "user", content = line_the_cursor_is_on}
     }
@@ -55,7 +75,7 @@ _G.suggest_random_sentence = function()
 
   -- Replace '<TOKEN>' with your actual DeepSeek API token
   local deepseek_api_token = os.getenv("DEEPSEEK_API_KEY")
-
+  local response = nil
   -- Asynchronously make the POST request
   curl.post('https://api.deepseek.com/chat/completions', {
     body = vim.fn.json_encode(deepseek_request_body),
@@ -64,25 +84,7 @@ _G.suggest_random_sentence = function()
       ["Accept"] = "application/json",
       ["Authorization"] = "Bearer " .. deepseek_api_token
     },
-    callback = function(response)
-      if response.status == 200 then
-        -- Log the API response
-        rktmb_deepseek_complete.log("DeepSeek API response:\n" .. response.body)
-        -- json decode the response body
-        local body = vim.fn.json_decode(response.body)
-
-        -- response.body is a Lua table of choices
-        -- Loop on the choices and display them
-        for _, choice in pairs(body.choices) do
-          rktmb_deepseek_complete.log(choice.text)
-          rktmb_deepseek_complete.log("===========================")
-        end
-      else
-        -- Log the error
-        rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
-        rktmb_deepseek_complete.log("Response body:\n" .. response.body)
-      end
-    end
+    callback = process_deepseek_response(response)
   })
 
 -- Generate the random sentence
@@ -139,6 +141,10 @@ _G.accept_suggestion = function()
   _G.current_extmark_id = nil
   _G.current_suggestion = nil
 end
+
+
+
+
 
 vim.api.nvim_create_autocmd("InsertLeave", {
   pattern = "*",
