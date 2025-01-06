@@ -9,8 +9,8 @@ _G.current_suggestion = nil
 local function process_deepseek_response(response)
   if response.status == 200 then
     rktmb_deepseek_complete.log("DeepSeek status: 200")
-    vim.schedule_wrap(function()
-      rktmb_deepseek_complete.log("DeepSeek in the schedule_wrap")
+    vim.schedule(function()
+      rktmb_deepseek_complete.log("DeepSeek in the schedule") -- Changed to just vim.schedule
       local body = vim.fn.json_decode(response.body)
       if body.choices and #body.choices > 0 then
         for _, choice in pairs(body.choices) do
@@ -22,7 +22,6 @@ local function process_deepseek_response(response)
       end
     end)
   else
-    -- Log the error
     rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
     rktmb_deepseek_complete.log("Response body:\n" .. response.body)
   end
