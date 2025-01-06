@@ -9,9 +9,7 @@ _G.current_suggestion = nil
 
 local function process_deepseek_response(response)
   if response.status == 200 then
-    rktmb_deepseek_complete.log("DeepSeek status: 200")
     vim.schedule(function()
-      rktmb_deepseek_complete.log("DeepSeek in the schedule")
       local body = vim.fn.json_decode(response.body)
       if body.choices and #body.choices > 0 then
         -- Extract the first choice from the API response
@@ -19,10 +17,10 @@ local function process_deepseek_response(response)
         local suggestion = choice.message.content
 
         -- Remove Markdown code block delimiters if present
-        suggestion = rktmb_deepseek_complete.remove_markdown_start_code_block_delimiter(suggestion)
-        suggestion = rktmb_deepseek_complete.remove_markdown_end_code_block_delimiter(suggestion)
+        suggestion = rktmb_deepseek_complete.remove_markdown_delimiters(suggestion)
         rktmb_deepseek_complete.log("Suggestion from DeepSeek API:")
         rktmb_deepseek_complete.log(suggestion)
+        rktmb_deepseek_complete.log("===========================")
 
         -- Split the suggestion into lines
         local lines = vim.split(suggestion, "\n", true)
@@ -89,7 +87,12 @@ _G.suggest_random_sentence = function()
   -- Get buffer content before and after cursor
   local current_buffer = vim.api.nvim_get_current_buf()
   local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, false)
-  local text_before_cursor = table.concat(lines, "\n", 1, current_row - 1) .. "\n" .. string.sub(lines[current_row], 1, current_col)
+  local lines_before_cursor = {}
+  for i = 1, current_row - 1 do
+    table.insert(lines_before_cursor, lines[i])
+  end
+  local text_before_cursor = table.concat(lines_before_cursor, "\n") .. "\n"
+
   local text_after_cursor = string.sub(lines[current_row], current_col + 1) .. "\n" .. table.concat(lines, "\n", current_row + 1)
   local line_the_cursor_is_on = lines[current_row]
 
@@ -167,6 +170,6 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   end
 })
 
-vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua suggest_random_sentence()<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("i", "<M-PageUp>", "<Cmd>lua accept_suggestion()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", "<M-Space>", "<Cmd>lua suggest_random_sentence()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua accept_suggestion()<CR>",      { noremap = true, silent = true })
 
