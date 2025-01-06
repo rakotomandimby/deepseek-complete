@@ -25,6 +25,7 @@ _G.suggest_random_sentence = function()
   local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, false)
   local text_before_cursor = table.concat(lines, "\n", 1, current_row - 1) .. "\n" .. string.sub(lines[current_row], 1, current_col)
   local text_after_cursor = string.sub(lines[current_row], current_col + 1) .. "\n" .. table.concat(lines, "\n", current_row + 1)
+  local line_the_cursor_is_on = string.sub(lines[current_row], current_col + 1)
 
   -- Log the content of text_before_cursor and text_after_cursor
   rktmb_deepseek_complete.log("Text before cursor:\n" .. text_before_cursor)
@@ -33,7 +34,6 @@ _G.suggest_random_sentence = function()
   -- Make the DeepSeek API request
   local deepseek_request_body = {
     model = "deepseek-chat",
-    prompt = text_before_cursor,
     echo = false,
     frequency_penalty = 0,
     max_tokens = 1024,
@@ -41,16 +41,23 @@ _G.suggest_random_sentence = function()
     stop = nil,
     stream = false,
     stream_options = nil,
-    -- suffix = text_after_cursor,
     temperature = 1,
-    top_p = 1
+    top_p = 1,
+    messages = {
+      {role = "system", content = "You are a software developer asssistant that will complete code based on the context provided. Just answer with raw code, no explanations needed, no markdown formatting."},
+      {role = "user", content = "I need you to complete code."},
+      {role = "assistant", content = "Give me the context and I will complete the code."},
+      {role = "user", content = text_before_cursor},
+      {role = "assistant", content = "What do you want me to continue?"},
+      {role = "user", content = line_the_cursor_is_on}
+    }
   }
 
   -- Replace '<TOKEN>' with your actual DeepSeek API token
   local deepseek_api_token = os.getenv("DEEPSEEK_API_KEY")
 
   -- Asynchronously make the POST request
-  curl.post('https://api.deepseek.com/beta/completions', {
+  curl.post('https://api.deepseek.com/chat/completions', {
     body = vim.fn.json_encode(deepseek_request_body),
     headers = {
       ["Content-Type"] = "application/json",
