@@ -75,7 +75,6 @@ _G.suggest_random_sentence = function()
 
   -- Replace '<TOKEN>' with your actual DeepSeek API token
   local deepseek_api_token = os.getenv("DEEPSEEK_API_KEY")
-  local response = nil
   -- Asynchronously make the POST request
   curl.post('https://api.deepseek.com/chat/completions', {
     body = vim.fn.json_encode(deepseek_request_body),
@@ -84,7 +83,7 @@ _G.suggest_random_sentence = function()
       ["Accept"] = "application/json",
       ["Authorization"] = "Bearer " .. deepseek_api_token
     },
-    callback = process_deepseek_response(response)
+    callback = function(response) process_deepseek_response(response) end
   })
 
 -- Generate the random sentence
