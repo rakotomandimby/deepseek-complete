@@ -4,36 +4,35 @@ _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
 _G.suggest_random_sentence = function()
   local current_row = vim.api.nvim_win_get_cursor(0)[1]
+
+  -- Ensure the cursor is at the end of the current line
   local current_line = vim.api.nvim_get_current_line()
+  vim.api.nvim_win_set_cursor(0, {current_row, #current_line})
 
-  -- Move to the end of the current line *before* generating the sentence
-  vim.api.nvim_win_set_cursor(0, {current_row, #current_line + 1})
-
+  -- Generate the random sentence
   local sentence = rktmb_deepseek_complete.generate_sentence()
   local lines = vim.split(sentence, "\n", true)
 
-  -- Construct virtual text chunks with proper newlines
-  local chunks = {}
+  -- Construct virt_lines with proper formatting
+  local virt_lines = {}
   for _, line in ipairs(lines) do
-    table.insert(chunks, {line .. '\n', "Comment"}) -- Use "Comment" highlight group for grey text
+    table.insert(virt_lines, { { line, "Comment" } }) -- Use "Comment" highlight group for grey text
   end
 
-  local current_col = vim.api.nvim_win_get_cursor(0)[2]
-
-  -- Set the extmark to the current row and column
-  vim.api.nvim_buf_set_extmark(0, ns_id, current_row - 1, current_col, {
-    virt_text = chunks,
-    virt_text_pos = 'eol', -- Position the virtual text at the end of the line
-    hl_mode = 'combine' -- Combine with existing text
+  -- Set the extmark with virt_lines
+  local extmark_id = vim.api.nvim_buf_set_extmark(0, ns_id, current_row - 1, 0, {
+    virt_lines = virt_lines,
+    virt_lines_above = false, -- Place the virtual lines below the current line
+    hl_mode = 'combine' -- Combine with existing text highlighting
   })
 
-  -- Clear on TextChangedI (this part is correct)
-  local augroup_id = vim.api.nvim_create_augroup("RktmbDeepseekCompleteSuggestions", {clear = true})
-  vim.api.nvim_create_autocmd("TextChangedI", {
+  -- Clear the suggestion on text change or insert leave
+  local augroup_id = vim.api.nvim_create_augroup("RktmbDeepseekCompleteSuggestions", { clear = true })
+  vim.api.nvim_create_autocmd({ "TextChangedI", "InsertLeave" }, {
     group = augroup_id,
     buffer = 0,
     callback = function()
-      vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+      vim.api.nvim_buf_del_extmark(0, ns_id, extmark_id)
       vim.api.nvim_del_augroup_by_id(augroup_id)
     end
   })
