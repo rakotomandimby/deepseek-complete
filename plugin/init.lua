@@ -62,13 +62,13 @@ _G.suggest_random_sentence = function()
     temperature = 1,
     top_p = 1,
     messages = {
-      {role = "system", content = "You are a software developer asssistant that will complete code based on the context provided. Just answer with raw code, no explanations needed, no markdown formatting."},
+      {role = "system", content = "You are a software developer asssistant that will complete code based on the context provided. Just answer with indented raw code, NO explanations, NO markdown formatting."},
       {role = "user", content = "I need you to complete code."},
-      {role = "assistant", content = "Give me the contex. What is before the cursor?"},
+      {role = "assistant", content = "What is before the cursor?"},
       {role = "user", content = text_before_cursor},
       {role = "assistant", content = "What is after the cursor?"},
       {role = "user", content = text_after_cursor},
-      {role = "assistant", content = "What do you want me to continue?"},
+      {role = "assistant", content = "What line do you want me to continue?"},
       {role = "user", content = line_the_cursor_is_on}
     }
   }
