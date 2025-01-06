@@ -86,7 +86,11 @@ _G.suggest_random_sentence = function()
       ["Accept"] = "application/json",
       ["Authorization"] = "Bearer " .. deepseek_api_token
     },
-    callback = function(response) process_deepseek_response(response) end
+    callback = function(response)
+      rktmb_deepseek_complete.log("DeepSeek API Curl callback called")
+      rktmb_deepseek_complete.log("Response Curl: " .. tostring(response.body)) 
+      process_deepseek_response(response) 
+    end
   })
 
 -- Generate the random sentence
