@@ -171,6 +171,6 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 })
 
 
-vim.api.nvim_set_keymap("i", "<C-Space>", "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", "<M-ESC>", "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua accept_suggestion()<CR>",      { noremap = true, silent = true })
 
