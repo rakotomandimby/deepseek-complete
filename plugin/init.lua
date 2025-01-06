@@ -6,15 +6,19 @@ _G.current_extmark_id = nil
 _G.current_suggestion = nil
 
 _G.suggest_random_sentence = function()
+
   local cursor_position_table=vim.api.nvim_win_get_cursor(0)
-  local current_row, current_col = table.unpack(cursor_position_table)
+  local current_row = cursor_position_table[1] -- Direct access
+  local current_col = cursor_position_table[2] -- Direct access
 
   -- Ensure the cursor is at the end of the current line
   local current_line = vim.api.nvim_get_current_line()
   vim.api.nvim_win_set_cursor(0, {current_row, #current_line})
 
   cursor_position_table=vim.api.nvim_win_get_cursor(0)
-  current_row, current_col = table.unpack(cursor_position_table)
+  current_row = cursor_position_table[1] -- Direct access
+  current_col = cursor_position_table[2] -- Direct access
+
   -- Get buffer content before and after cursor
   local current_buffer = vim.api.nvim_get_current_buf()
   local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, false)
