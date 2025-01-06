@@ -6,19 +6,22 @@ _G.current_extmark_id = nil
 _G.current_suggestion = nil
 
 _G.suggest_random_sentence = function()
-  local current_row = vim.api.nvim_win_get_cursor(0)[1]
+  local current_row, current_col = unpack(vim.api.nvim_win_get_cursor(0))
 
   -- Ensure the cursor is at the end of the current line
   local current_line = vim.api.nvim_get_current_line()
   vim.api.nvim_win_set_cursor(0, {current_row, #current_line})
 
-  -- Get the text before and after the cursor
-  local text_before_cursor = string.sub(current_line, 1, vim.api.nvim_win_get_cursor(0)[2])
-  local text_after_cursor = string.sub(current_line, vim.api.nvim_win_get_cursor(0)[2] + 1)
+  current_row, current_col = unpack(vim.api.nvim_win_get_cursor(0))
+  -- Get buffer content before and after cursor
+  local current_buffer = vim.api.nvim_get_current_buf()
+  local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, false)
+  local text_before_cursor = table.concat(lines, "\n", 1, current_row - 1) .. string.sub(lines[current_row], 1, current_col)
+  local text_after_cursor = string.sub(lines[current_row], current_col + 1) .. "\n" .. table.concat(lines, "\n", current_row + 1)
 
-  -- Log the text before and after the cursor
-  rktmb_deepseek_complete.log("Text before cursor: " .. text_before_cursor)
-  rktmb_deepseek_complete.log("Text after cursor: " .. text_after_cursor)
+
+  rktmb_deepseek_complete.log("Text before cursor:\n" .. text_before_cursor)
+  rktmb_deepseek_complete.log("Text after cursor:\n" .. text_after_cursor)
 
   -- Generate the random sentence
   local sentence = rktmb_deepseek_complete.generate_sentence()
