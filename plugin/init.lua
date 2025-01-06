@@ -15,7 +15,7 @@ _G.suggest_random_sentence = function()
   -- Construct virtual text chunks with proper newlines
   local chunks = {}
   for _, line in ipairs(lines) do
-    table.insert(chunks, {line, "Comment"}) -- Use "Comment" highlight group for grey text
+    table.insert(chunks, {line .. '\n', "Comment"}) -- Use "Comment" highlight group for grey text
   end
 
   local current_col = vim.api.nvim_win_get_cursor(0)[2]
