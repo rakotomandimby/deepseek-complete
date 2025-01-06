@@ -7,29 +7,24 @@ _G.suggest_random_sentence = function()
   local current_line = vim.api.nvim_get_current_line()
 
   -- Move to the end of the current line *before* generating the sentence
-  vim.api.nvim_win_set_cursor(0, {current_row, #current_line +1})
+  vim.api.nvim_win_set_cursor(0, {current_row, #current_line + 1})
 
   local sentence = rktmb_deepseek_complete.generate_sentence()
   local lines = vim.split(sentence, "\n", true)
 
-
   -- Construct virtual text chunks with proper newlines
   local chunks = {}
   for _, line in ipairs(lines) do
-    table.insert(chunks, {line .. '\n', "Comment"})
-    -- Log the line
-    rktmb_deepseek_complete.log(line)
-    -- Add newline chunk after each line *except* the last
-    if _ < #lines then
-      table.insert(chunks, {"\n", "Comment"}) -- Actual newline character
-    end
+    table.insert(chunks, {line, "Comment"}) -- Use "Comment" highlight group for grey text
   end
 
   local current_col = vim.api.nvim_win_get_cursor(0)[2]
 
+  -- Set the extmark to the current row and column
   vim.api.nvim_buf_set_extmark(0, ns_id, current_row - 1, current_col, {
     virt_text = chunks,
-    virt_text_pos = 'overlay'
+    virt_text_pos = 'eol', -- Position the virtual text at the end of the line
+    hl_mode = 'combine' -- Combine with existing text
   })
 
   -- Clear on TextChangedI (this part is correct)
@@ -43,7 +38,6 @@ _G.suggest_random_sentence = function()
     end
   })
 end
-
 
 vim.api.nvim_create_autocmd("InsertLeave", {
   pattern = "*",
