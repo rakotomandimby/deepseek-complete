@@ -71,7 +71,7 @@ local function process_deepseek_response(response)
 end
 
 
-_G.suggest_random_sentence = function()
+_G.suggest = function()
   local cursor_position_table = vim.api.nvim_win_get_cursor(0)
   local current_row = cursor_position_table[1]
   local current_col = cursor_position_table[2]
@@ -170,9 +170,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   end
 })
 
--- unmap whatever is mapped to <C-Space>
-vim.api.nvim_del_keymap("i", "<C-Space>")
 
-vim.api.nvim_set_keymap("i", "<C-Space>", "<Cmd>lua suggest_random_sentence()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", "<C-Space>", "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", "<M-PageDown>", "<Cmd>lua accept_suggestion()<CR>",      { noremap = true, silent = true })
 
