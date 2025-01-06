@@ -8,15 +8,9 @@ _G.current_suggestion = nil
 
 local function process_deepseek_response(response)
   if response.status == 200 then
+    rktmb_deepseek_complete.log("DS is 200")
     local body = vim.fn.json_decode(response.body)
-    if body.choices and #body.choices > 0 then
-      for _, choice in pairs(body.choices) do
-        rktmb_deepseek_complete.log(choice.text)
-        rktmb_deepseek_complete.log("===========================")
-      end
-    else
-      rktmb_deepseek_complete.log("DeepSeek API returned no choices.")
-    end
+    rktmb_deepseek_complete.log("DS Body: " .. vim.inspect(body))
   else
     -- Log the error
     rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
