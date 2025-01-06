@@ -36,13 +36,12 @@ _G.suggest_random_sentence = function()
     prompt = text_before_cursor,
     echo = true,
     frequency_penalty = 0,
-    -- logprobs = 0,
     max_tokens = 8192,
     presence_penalty = 0,
     stop = nil,
     stream = false,
     stream_options = nil,
-    -- suffix = text_after_cursor,
+    suffix = text_after_cursor,
     temperature = 1,
     top_p = 1
   }
