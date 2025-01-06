@@ -1,4 +1,5 @@
 local rktmb_deepseek_complete = require("rktmb-deepseek-complete")
+local curl = require('plenary.curl')
 
 _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
@@ -7,29 +8,69 @@ _G.current_suggestion = nil
 
 _G.suggest_random_sentence = function()
 
-  local cursor_position_table=vim.api.nvim_win_get_cursor(0)
-  local current_row = cursor_position_table[1] -- Direct access
-  local current_col = cursor_position_table[2] -- Direct access
+  local cursor_position_table = vim.api.nvim_win_get_cursor(0)
+  local current_row = cursor_position_table[1]
+  local current_col = cursor_position_table[2]
 
   -- Ensure the cursor is at the end of the current line
   local current_line = vim.api.nvim_get_current_line()
   vim.api.nvim_win_set_cursor(0, {current_row, #current_line})
 
-  cursor_position_table=vim.api.nvim_win_get_cursor(0)
-  current_row = cursor_position_table[1] -- Direct access
-  current_col = cursor_position_table[2] -- Direct access
+  cursor_position_table = vim.api.nvim_win_get_cursor(0)
+  current_row = cursor_position_table[1]
+  current_col = cursor_position_table[2]
 
   -- Get buffer content before and after cursor
   local current_buffer = vim.api.nvim_get_current_buf()
   local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, false)
-  local text_before_cursor = table.concat(lines, "\n", 1, current_row - 1) .. string.sub(lines[current_row], 1, current_col)
+  local text_before_cursor = table.concat(lines, "\n", 1, current_row - 1) .. "\n" .. string.sub(lines[current_row], 1, current_col)
   local text_after_cursor = string.sub(lines[current_row], current_col + 1) .. "\n" .. table.concat(lines, "\n", current_row + 1)
 
-
+  -- Log the content of text_before_cursor and text_after_cursor
   rktmb_deepseek_complete.log("Text before cursor:\n" .. text_before_cursor)
   rktmb_deepseek_complete.log("Text after cursor:\n" .. text_after_cursor)
 
-  -- Generate the random sentence
+  -- Make the DeepSeek API request
+  local deepseek_request_body = {
+    model = "deepseek-chat",
+    prompt = text_before_cursor,
+    echo = false,
+    frequency_penalty = 0,
+    logprobs = 0,
+    max_tokens = 131072,
+    presence_penalty = 0,
+    stop = {"```"},
+    stream = false,
+    stream_options = vim.NIL,
+    suffix = text_after_cursor,
+    temperature = 1,
+    top_p = 1
+  }
+
+  -- Replace '<TOKEN>' with your actual DeepSeek API token
+  local deepseek_api_token = os.getenv("DEEPSEEK_API_TOKEN")
+
+  -- Asynchronously make the POST request
+  curl.post('https://api.deepseek.com/beta/completions', {
+    body = vim.fn.json_encode(deepseek_request_body),
+    headers = {
+      ["Content-Type"] = "application/json",
+      ["Accept"] = "application/json",
+      ["Authorization"] = "Bearer " .. deepseek_api_token
+    },
+    callback = function(response)
+      if response.status == 200 then
+        -- Log the API response
+        rktmb_deepseek_complete.log("DeepSeek API response:\n" .. response.body)
+      else
+        -- Log the error
+        rktmb_deepseek_complete.log("DeepSeek API request failed with status: " .. tostring(response.status))
+        rktmb_deepseek_complete.log("Response body:\n" .. response.body)
+      end
+    end
+  })
+
+-- Generate the random sentence
   local sentence = rktmb_deepseek_complete.generate_sentence()
   lines = vim.split(sentence, "\n", true)
 
