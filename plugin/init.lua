@@ -63,15 +63,15 @@ _G.accept_suggestion = function()
   -- Lines are inserted below the current line
   vim.api.nvim_buf_set_lines(bufnr, current_line, current_line, false, _G.current_suggestion)
 
+  -- Optional: Move the cursor to the end of the inserted text
+  vim.api.nvim_win_set_cursor(0, { current_line + #_G.current_suggestion, 0 })
+
   -- Remove the extmark (inline suggestion)
   vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
 
   -- Clear the stored extmark ID and suggestion
   _G.current_extmark_id = nil
   _G.current_suggestion = nil
-
-  -- Optional: Move the cursor to the end of the inserted text
-  vim.api.nvim_win_set_cursor(0, { current_line + #_G.current_suggestion, 0 })
 end
 
 vim.api.nvim_create_autocmd("InsertLeave", {
