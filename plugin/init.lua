@@ -14,7 +14,7 @@ local function process_deepseek_response(response)
       local body = vim.fn.json_decode(response.body)
       if body.choices and #body.choices > 0 then
         for _, choice in pairs(body.choices) do
-          rktmb_deepseek_complete.log(choice.text)
+          rktmb_deepseek_complete.log(choice.message.content)
           rktmb_deepseek_complete.log("===========================")
         end
       else
