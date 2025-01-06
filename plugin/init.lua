@@ -63,7 +63,7 @@ _G.suggest_random_sentence = function()
         rktmb_deepseek_complete.log("DeepSeek API response:\n" .. response.body)
         -- response.body is a Lua table of choices
         -- Loop on the choices and display them
-        for _, choice in ipairs(response.body.choices) do
+        for _, choice in pairs(response.body.choices) do
           rktmb_deepseek_complete.log(choice.text)
           rktmb_deepseek_complete.log("===========================")
         end
