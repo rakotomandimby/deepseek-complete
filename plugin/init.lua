@@ -91,7 +91,7 @@ _G.suggest_random_sentence = function()
   local lines = vim.api.nvim_buf_get_lines(current_buffer, 0, -1, false)
   local text_before_cursor = table.concat(lines, "\n", 1, current_row - 1) .. "\n" .. string.sub(lines[current_row], 1, current_col)
   local text_after_cursor = string.sub(lines[current_row], current_col + 1) .. "\n" .. table.concat(lines, "\n", current_row + 1)
-  local line_the_cursor_is_on = string.sub(lines[current_row], current_col + 1)
+  local line_the_cursor_is_on = lines[current_row]
 
   -- Log the text before and after the cursor (optional)
   rktmb_deepseek_complete.log("Text before cursor:\n" .. text_before_cursor .. "\n=====================================")
