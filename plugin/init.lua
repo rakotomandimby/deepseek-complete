@@ -9,7 +9,7 @@ _G.current_suggestion = nil
 local function process_deepseek_response(response)
   rktmb_deepseek_complete.log("DeepSeek API response handler called")
   -- Log the API response
-  rktmb_deepseek_complete.log("DeepSeek API response:\n" .. response)
+  rktmb_deepseek_complete.log("DeepSeek API response from handler:\n" .. tostring(response))
   if response.status == 200 then
     -- Use vim.schedule_wrap to defer the json_decode call
     vim.schedule_wrap(function()
