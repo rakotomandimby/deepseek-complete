@@ -146,7 +146,7 @@ _G.suggest = function()
   local deepseek_api_token = os.getenv("DEEPSEEK_API_KEY")
 
   -- Asynchronously make the POST request
-  curl.post('https://api.deepseek.com/beta/completions', {
+  curl.post('https://api.deepseek.com/chat/completions', {
     body = vim.fn.json_encode(deepseek_request_body),
     headers = {
       ["Content-Type"] = "application/json",
