@@ -27,11 +27,16 @@ end
 --  If an extmark already exists, it will be updated. Otherwise, a new one will be created.
 --  The extmark is placed after the current cursor position.
 --]]
+
 function M.set_suggestion_extmark(suggestion)
   local current_buf = vim.api.nvim_get_current_buf()
   local position = vim.api.nvim_win_get_cursor(0)
   local row = position[1] - 1 -- Adjust to 0-based indexing
   local col = position[2]
+  local lines = vim.split(suggestion, '\n', true)
+  local end_row = math.min(row + #lines - 1, vim.api.nvim_buf_line_count(current_buf) - 1) -- Cap end_row
+  local end_col = string.len(lines[#lines])
+
 
   if _G.current_extmark_id then
     -- Update existing extmark
@@ -39,20 +44,26 @@ function M.set_suggestion_extmark(suggestion)
       row = row,
       col = col,
       opts = {
-        end_row = row + #vim.split(suggestion, '\n', true) -1,
-        end_col = string.len(vim.split(suggestion, '\n', true)[#vim.split(suggestion, '\n', true)]),
+        end_row = end_row,
+        end_col = end_col,
         virt_text =  {{suggestion, "Comment"}},
         virt_text_pos = "overlay"
       }
     })
   else
     -- Create new extmark
-    _G.current_extmark_id = vim.api.nvim_buf_set_extmark(current_buf, _G.ns_id, row, col, {
-      end_row = row + #vim.split(suggestion, '\n', true) -1,
-      end_col = string.len(vim.split(suggestion, '\n', true)[#vim.split(suggestion, '\n', true)]),
-      virt_text = {{suggestion, "Comment"}},
-      virt_text_pos = "overlay"
-    })
+    _G.current_extmark_id = vim.api.nvim_buf_set_extmark(
+      current_buf,
+      _G.ns_id,
+      row,
+      col,
+      {
+        end_row = end_row,
+        end_col = end_col,
+        virt_text = {{suggestion, "Comment"}},
+        virt_text_pos = "overlay"
+      }
+    )
   end
 end
 
