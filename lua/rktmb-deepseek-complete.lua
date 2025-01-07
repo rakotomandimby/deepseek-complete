@@ -36,6 +36,7 @@ end
 
 -- get the content of a given buffer
 function M.get_buffer_content(buf)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, {}) -- This forces the buffer to load
   local content = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   local name = vim.api.nvim_buf_get_name(buf)
   M.log(name .. "get_buffer_content: " .. vim.inspect(content)) -- Correct logging
