@@ -8,7 +8,6 @@ _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
 _G.current_extmark_id = nil
 _G.current_suggestion = nil
-_G.ignore_text_changed = false
 
 -- Default keymappings
 local default_opts = {
@@ -29,9 +28,7 @@ local function process_deepseek_response(response)
       vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
       local choice = response_body.choices[1]
       local suggestion = choice.message.content
-      _G.ignore_text_changed = true -- Set the guard before setting extmarks
       rktmb_deepseek_complete.set_suggestion_extmark(suggestion)
-      _G.ignore_text_changed = false -- Unset the guard after setting extmarks
       _G.current_suggestion = suggestion
       rktmb_deepseek_complete.log("\n\nSuggestion from DeepSeek API:")
       rktmb_deepseek_complete.log(suggestion)
@@ -89,22 +86,6 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   end
 })
 
-local function is_printable_char(char)
-  local char_number = tonumber(char)
-  rktmb_deepseek_complete.log("keyboard: " .. char)
-  return (char_number == nil ) or (char_number >= 32 and char_number <= 126)
-end
-
-vim.api.nvim_create_autocmd("InsertCharPre", {
-  pattern = "*",
-  callback = function()
-    local char = vim.fn.getchar()
-    if is_printable_char(char) then
-      -- Clear existing extmarks when typing a printable character
-      vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
-    end
-  end
-})
 
 -- Key mappings
 vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
