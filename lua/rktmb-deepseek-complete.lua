@@ -43,7 +43,6 @@ function M.set_suggestion_extmark(suggestion)
     vim.api.nvim_buf_set_extmark(
       current_buf,
       _G.ns_id,
-      _G.current_extmark_id,
       row,
       col,
       {
