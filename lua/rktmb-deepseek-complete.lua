@@ -66,6 +66,10 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
     local filename = vim.api.nvim_buf_get_name(buf)
     if not filename:match("%%.md$") then  -- Lua pattern matching for ".md" at the end
       local content = M.get_buffer_content(buf)
+      -- log the filename then the content
+      rktmb_deepseek_complete.log(filename)
+      rktmb_deepseek_complete.log(content)
+
       table.insert(messages, { role = "assistant", content = "Give me the content of " .. filename })
       table.insert(messages, { role = "user", content = content })
     end
