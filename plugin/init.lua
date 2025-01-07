@@ -189,9 +189,6 @@ _G.accept_the_whole_suggestion = function()
   _G.current_suggestion = nil
 end
 
--- Above, we have the function to accept the whole suggestion.
--- Below I want to set a way to accept only one line of the suggestion.
--- Fill the content of the function below in order to achieve that.
 _G.accept_one_suggestion_line = function()
   if not _G.current_extmark_id or not _G.current_suggestion then
     -- No active suggestion to accept
@@ -206,32 +203,18 @@ _G.accept_one_suggestion_line = function()
   local first_suggestion_line = _G.current_suggestion[1]
 
   -- Insert the first line of the suggestion into the buffer
-  vim.api.nvim_buf_set_lines(bufnr, current_line -1 , current_line - 1, false, { first_suggestion_line })
+  vim.api.nvim_buf_set_lines(bufnr, current_line - 1, current_line - 1, false, { first_suggestion_line })
 
-  -- Move the cursor to the next line
+  -- Move the cursor to the next line, after the inserted text
   vim.api.nvim_win_set_cursor(0, { current_line, #first_suggestion_line })
 
+  -- Clear existing extmark and suggestion
+  vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
+  _G.current_extmark_id = nil
+  _G.current_suggestion = nil
 
-  -- Remove the first line from the suggestion
-  table.remove(_G.current_suggestion, 1)
-
-  -- If the suggestion is now empty, remove the extmark
-  if #_G.current_suggestion == 0 then
-    vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
-    _G.current_extmark_id = nil
-    _G.current_suggestion = nil
-  else
-    -- Update the extmark with the remaining lines
-      local virt_lines = {}
-      for _, line in ipairs(_G.current_suggestion) do
-        table.insert(virt_lines, { { line, "Comment" } }) -- Use "Comment" highlight group for grey text
-      end
-    vim.api.nvim_buf_set_extmark(0, ns_id, current_line, 0, {
-      virt_lines = virt_lines,
-      virt_lines_above = false, -- Place the virtual lines below the current line
-      hl_mode = 'combine'       -- Combine with existing text highlighting
-    })
-  end
+  -- Trigger a new suggestion
+  vim.schedule(suggest) -- Use vim.schedule to avoid "recursive" lua call
 end
 
 vim.api.nvim_set_keymap("i", user_opts.suggest_keymap,      "<Cmd>lua suggest()<CR>",                     { noremap = true, silent = true })
