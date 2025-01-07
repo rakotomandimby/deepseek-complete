@@ -23,6 +23,7 @@ function M.remove_markdown_delimiters(text)
   return table.concat(lines, "\n")
 end
 
+
 function M.set_suggestion_extmark(suggestion)
   -- Remove Markdown code block delimiters from the suggestion
   suggestion = M.remove_markdown_delimiters(suggestion)
@@ -38,38 +39,42 @@ function M.set_suggestion_extmark(suggestion)
   -- Clear existing extmarks
   vim.api.nvim_buf_clear_namespace(current_buf, _G.ns_id, 0, -1)
 
-  -- Insert each line as a separate extmark
-  for i, line in ipairs(lines) do
+  -- Insert empty lines into the buffer if necessary
+  if #lines > 1 then
+    local num_lines_to_insert = #lines - 1
+    -- Insert empty lines after current line
+    vim.api.nvim_buf_set_lines(current_buf, row + 1, row + 1, false, vim.fn['repeat']({' '}, num_lines_to_insert))
+  end
+
+  -- Now set the extmarks
+  -- First line: virt_text on current line starting at cursor column
+  vim.api.nvim_buf_set_extmark(
+    current_buf,
+    _G.ns_id,
+    row,
+    col,
+    {
+      virt_text = { { lines[1], "Comment" } },
+      hl_mode = 'combine',
+    }
+  )
+
+  -- Remaining lines: virt_text on the inserted empty lines
+  for i = 2, #lines do
     local extmark_row = row + i - 1 -- Adjust row for each line
-
-    -- Ensure the extmark row is within buffer bounds
-    local line_count = vim.api.nvim_buf_line_count(current_buf)
-    if extmark_row >= line_count then
-      extmark_row = line_count - 1
-    end
-
-    -- Adjust column for lines beyond the first
-    local extmark_col = (i == 1) and col or 0
-
-    -- Truncate col if it exceeds line length
-    local line_length = #vim.api.nvim_buf_get_lines(current_buf, extmark_row, extmark_row + 1, false)[1]
-    if extmark_col > line_length then
-      extmark_col = line_length
-    end
-
-    -- Set the extmark
     vim.api.nvim_buf_set_extmark(
       current_buf,
       _G.ns_id,
       extmark_row,
-      extmark_col,
+      0,
       {
-        virt_text = {{line, "Comment"}},
+        virt_text = { { lines[i], "Comment" } },
         hl_mode = 'combine',
       }
     )
   end
 end
+
 
 function M.get_text_before_cursor()
   M.log("get_text_before_cursor")
