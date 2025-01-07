@@ -27,7 +27,7 @@ function M.set_suggestion_extmark(suggestion)
   local current_buf = vim.api.nvim_get_current_buf()
   local position = vim.api.nvim_win_get_cursor(0)
   local row = position[1] - 1 -- Adjust to 0-based indexing
-  local initial_col = position[2]  -- Store the initial column
+  local col = position[2]
 
   -- Split the suggestion into lines
   local lines = vim.split(suggestion, '\n', true)
@@ -38,32 +38,34 @@ function M.set_suggestion_extmark(suggestion)
     table.insert(virt_text_lines, {line, "Comment"})
   end
 
-  -- Insert each line as a separate extmark, adjusting the column
+  -- Insert each line as a separate extmark
   for i, line in ipairs(lines) do
     local extmark_row = row + i - 1 -- Increment the row for each line
-    local col = 0  -- Reset col to 0 for subsequent lines, or use initial_col for the first line
-
-    if i == 1 then
-      col = initial_col
-    end
-
-
-    local opts = {
-      virt_text = {{line, "Comment"}},
-      virt_text_pos = 'overlay' -- Place the virtual text above the real text.
-    }
-
     if _G.current_extmark_id then
-      -- Update existing extmark.  Clear previous multi-line extmarks first.
-      vim.api.nvim_buf_del_extmark(current_buf, _G.ns_id, _G.current_extmark_id)
-      _G.current_extmark_id = vim.api.nvim_buf_set_extmark(current_buf, _G.ns_id, extmark_row, col, opts)
+      -- Update existing extmark
+      vim.api.nvim_buf_set_extmark(
+        current_buf,
+        _G.ns_id,
+        extmark_row,
+        col,
+        {
+          virt_text = {{line, "Comment"}},
+        }
+      )
     else
       -- Create new extmark
-      _G.current_extmark_id = vim.api.nvim_buf_set_extmark(current_buf, _G.ns_id, extmark_row, col, opts)
+      _G.current_extmark_id = vim.api.nvim_buf_set_extmark(
+        current_buf,
+        _G.ns_id,
+        extmark_row,
+        col,
+        {
+          virt_text = {{line, "Comment"}},
+        }
+      )
     end
   end
 end
-
 
 function M.get_text_before_cursor()
   M.log("get_text_before_cursor")
