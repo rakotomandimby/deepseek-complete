@@ -17,13 +17,15 @@ local default_opts = {
 -- Read user configuration
 local user_opts = vim.tbl_deep_extend("force", default_opts, vim.g.rktmb_deepseek_complete_opts or {})
 local function process_deepseek_response(response)
-  local response_body = vim.fn.json_decode(response.body)
-  if response_body.choices and #response_body.choices > 0 then
-    local choice = response_body.choices[1]
-    local suggestion = choice.message.content
-    rktmb_deepseek_complete.log("\n\nSuggestion from DeepSeek API:")
-    rktmb_deepseek_complete.log(suggestion)
-  end
+  vim.schedule(function()  -- Use vim.schedule to run this in the main thread
+    local response_body = vim.fn.json_decode(response.body)
+    if response_body.choices and #response_body.choices > 0 then
+      local choice = response_body.choices[1]
+      local suggestion = choice.message.content
+      rktmb_deepseek_complete.log("\n\nSuggestion from DeepSeek API:")
+      rktmb_deepseek_complete.log(suggestion)
+    end
+  end)
 end
 
 _G.suggest = function()
