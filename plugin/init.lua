@@ -43,8 +43,6 @@ _G.suggest = function()
     return
   end
 
-  vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
-
   api_call_in_progress = true
   last_api_call_time = now
   local deepseek_request_body = {
