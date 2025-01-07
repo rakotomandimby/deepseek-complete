@@ -73,6 +73,18 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 
 
 vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()<CR>",                     { noremap = true, silent = true })
+-- Autocmd for triggering suggestions on printable characters
+vim.api.nvim_create_autocmd("InsertCharPre", {
+    pattern = "*",
+    callback = function()
+        -- Check if the typed character is printable.  This avoids triggering on <Esc>, <BS>, etc.
+        local char = vim.api.nvim_get_current_buf()[0]
+        if string.match(char, "%%p") or string.match(char, "%%s") or string.match(char, "%%a") then
+            suggest()
+        end
+    end
+})
+
 -- vim.api.nvim_set_keymap("i", user_opts.accept_all_keymap,    "<Cmd>lua accept_the_whole_suggestion()<CR>", { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap("i", user_opts.accept_line_keymap,   "<Cmd>lua accept_one_suggestion_line()<CR>",  { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap("i", user_opts.accept_word_keymap   ,"<Cmd>lua accept_one_suggestion_word()<CR>",  { noremap = true, silent = true })
