@@ -209,7 +209,7 @@ _G.accept_one_suggestion_line = function()
   _G.current_suggestion = nil
 
   -- Trigger a new suggestion
-  vim.schedule(_G.suggest) -- Call suggest directly, no need for an anonymous function
+  -- vim.schedule(_G.suggest) -- Call suggest directly, no need for an anonymous function
 end
 
 vim.api.nvim_set_keymap("i", user_opts.suggest_keymap,      "<Cmd>lua suggest()<CR>",                     { noremap = true, silent = true })
