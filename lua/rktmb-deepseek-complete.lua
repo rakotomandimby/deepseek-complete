@@ -23,7 +23,6 @@ function M.remove_markdown_delimiters(text)
   return table.concat(lines, "\n")
 end
 
-
 function M.set_suggestion_extmark(suggestion)
   local current_buf = vim.api.nvim_get_current_buf()
   local position = vim.api.nvim_win_get_cursor(0)
@@ -39,29 +38,32 @@ function M.set_suggestion_extmark(suggestion)
     table.insert(virt_text_lines, {line, "Comment"})
   end
 
-
-  if _G.current_extmark_id then
-    -- Update existing extmark
-    vim.api.nvim_buf_set_extmark(
-      current_buf,
-      _G.ns_id,
-      row,
-      col,
-      {
-        virt_text = virt_text_lines,
-      }
-    )
-  else
-    -- Create new extmark
-    _G.current_extmark_id = vim.api.nvim_buf_set_extmark(
-      current_buf,
-      _G.ns_id,
-      row,
-      col,
-      {
-        virt_text = virt_text_lines,
-      }
-    )
+  -- Insert each line as a separate extmark
+  for i, line in ipairs(lines) do
+    local extmark_row = row + i - 1 -- Increment the row for each line
+    if _G.current_extmark_id then
+      -- Update existing extmark
+      vim.api.nvim_buf_set_extmark(
+        current_buf,
+        _G.ns_id,
+        extmark_row,
+        col,
+        {
+          virt_text = {{line, "Comment"}},
+        }
+      )
+    else
+      -- Create new extmark
+      _G.current_extmark_id = vim.api.nvim_buf_set_extmark(
+        current_buf,
+        _G.ns_id,
+        extmark_row,
+        col,
+        {
+          virt_text = {{line, "Comment"}},
+        }
+      )
+    end
   end
 end
 
