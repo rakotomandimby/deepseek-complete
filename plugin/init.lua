@@ -38,7 +38,7 @@ end
 _G.suggest = function()
 
   local now = vim.loop.hrtime() / 1000000
-  if rktmb_deepseek_complete.api_call_in_progress or (now - rktmb_deepseek_complete.last_api_call_time < user_opts.debounce_time) then
+  if api_call_in_progress or (now - last_api_call_time < user_opts.debounce_time) then
     rktmb_deepseek_complete.log("API call in progress or too recent, skipping.")
     return
   end
