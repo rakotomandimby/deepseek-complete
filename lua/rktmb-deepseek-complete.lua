@@ -41,7 +41,7 @@ function M.get_buffer_content(buf)
   end
   local content = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   local name = vim.api.nvim_buf_get_name(buf)
-  M.log(name .. "get_buffer_content: " .. vim.inspect(content)) -- Correct logging
+  M.log(name .. "\n".. table.concat(content, "\n"))
   return table.concat(content, "\n")
 end
 
