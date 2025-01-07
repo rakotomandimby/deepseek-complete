@@ -54,8 +54,8 @@ vim.g.rktmb_deepseek_complete_opts = {
 
 # Next features
 
-- [ ] Add the "finish the sentence" feature (complete the current line)
-- [ ] Improve the "accept line" user experience
-- [ ] Add the "complete as-you-type" feature (heavy for the API!)
+- [ ] [Add the "finish the sentence" feature (complete the current line)](https://github.com/rakotomandimby/deepseek-complete/issues/1)
+- [ ] [Improve the "accept line" user experience](https://github.com/rakotomandimby/deepseek-complete/issues/2)
+- [ ] [Add the "complete as-you-type" feature (heavy for the API!)](https://github.com/rakotomandimby/deepseek-complete/issues/3)
 
 If you have any ideas, feel free to open an issue or PR!
