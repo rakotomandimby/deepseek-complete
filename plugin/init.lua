@@ -8,14 +8,13 @@ _G.current_suggestion = nil
 
 -- Default keymappings
 local default_opts = {
-  suggest_keymap = "<M-ESC>",
+  suggest_lines_keymap = "<M-ESC>",
   accept_all_keymap = "<M-PageDown>",
   accept_line_keymap = "<M-Down>",
 }
 
 -- Read user configuration
 local user_opts = vim.tbl_deep_extend("force", default_opts, vim.g.rktmb_deepseek_complete_opts or {})
-
 
 local function process_deepseek_response(response)
   if response.status < 599 then
@@ -81,7 +80,7 @@ local function process_deepseek_response(response)
 end
 
 
-_G.suggest = function()
+_G.suggest_lines = function()
   local cursor_position_table = vim.api.nvim_win_get_cursor(0)
   local current_row = cursor_position_table[1]
   local current_col = cursor_position_table[2]
@@ -128,7 +127,7 @@ _G.suggest = function()
     text_after_cursor = string.sub(lines[current_row], current_col + 1) .. "\n" .. table.concat(lines, "\n", current_row + 1)
   end
 
-  local deepseek_request_body = {
+  local deepseek_request_for_lines_body = {
     model = "deepseek-chat",
     echo = false,
     frequency_penalty = 0,
@@ -139,7 +138,7 @@ _G.suggest = function()
     stream_options = nil,
     temperature = 1,
     top_p = 1,
-    messages = rktmb_deepseek_complete.build_messages_table(text_before_cursor, text_after_cursor, line_the_cursor_is_on)
+    messages = rktmb_deepseek_complete.build_messages_table_for_lines(text_before_cursor, text_after_cursor, line_the_cursor_is_on)
   }
 
   -- Retrieve the API token
@@ -147,7 +146,7 @@ _G.suggest = function()
 
   -- Asynchronously make the POST request
   curl.post('https://api.deepseek.com/chat/completions', {
-    body = vim.fn.json_encode(deepseek_request_body),
+    body = vim.fn.json_encode(deepseek_request_for_lines_body),
     headers = {
       ["Content-Type"] = "application/json",
       ["Accept"] = "application/json",
@@ -209,9 +208,9 @@ _G.accept_one_suggestion_line = function()
   _G.current_suggestion = nil
 
   -- Trigger a new suggestion
-  vim.schedule(_G.suggest) -- Call suggest directly, no need for an anonymous function
+  vim.schedule(_G.suggest_lines())
 end
 
-vim.api.nvim_set_keymap("i", user_opts.suggest_keymap,      "<Cmd>lua suggest()<CR>",                     { noremap = true, silent = true })
-vim.api.nvim_set_keymap("i", user_opts.accept_all_keymap,   "<Cmd>lua accept_the_whole_suggestion()<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("i", user_opts.accept_line_keymap,  "<Cmd>lua accept_one_suggestion_line()<CR>",  { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest_lines()<CR>",               { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", user_opts.accept_all_keymap,    "<Cmd>lua accept_the_whole_suggestion()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", user_opts.accept_line_keymap,   "<Cmd>lua accept_one_suggestion_line()<CR>",  { noremap = true, silent = true })

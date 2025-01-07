@@ -50,7 +50,7 @@ function M.get_current_buffer_name()
 end
 
 
-function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_cursor_is_on)
+function M.build_messages_table_for_lines(text_before_cursor, text_after_cursor, line_the_cursor_is_on)
   local buffers = M.get_open_buffers()
   local messages = {}
   table.insert(messages, {
