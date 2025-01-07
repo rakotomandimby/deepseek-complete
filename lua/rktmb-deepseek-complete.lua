@@ -40,16 +40,19 @@ function M.set_suggestion_extmark(suggestion)
 
   if _G.current_extmark_id then
     -- Update existing extmark
-    vim.api.nvim_buf_set_extmark(current_buf, _G.ns_id, _G.current_extmark_id, {
-      row = row,
-      col = col,
-      opts = {
+    vim.api.nvim_buf_set_extmark(
+      current_buf,
+      _G.ns_id,
+      _G.current_extmark_id,
+      row,
+      col,
+      {
         end_row = end_row,
         end_col = end_col,
         virt_text =  {{suggestion, "Comment"}},
         virt_text_pos = "overlay"
       }
-    })
+    )
   else
     -- Create new extmark
     _G.current_extmark_id = vim.api.nvim_buf_set_extmark(
@@ -140,13 +143,13 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_to_c
   table.insert(messages, {
     role = "system",
     content = "You are a software developer assistant that will complete the code from the surcor position, based on the provided context."
-    .. " Just answer with indented raw code, NO explanations, NO markdown formatting."
-    .. " The concatenation of the code before the cursor,"
-    .. " the code you propose,"
-    .. " AND the code after your suggestion"
-    .. " MUST be valid and consistent."
-    .. " You continue the code, so start your suggestion with the next word to be placed after the cursor."
-    })
+      .. " Just answer with indented raw code, NO explanations, NO markdown formatting."
+      .. " The concatenation of the code before the cursor,"
+      .. " the code you propose,"
+      .. " AND the code after your suggestion"
+      .. " MUST be valid and consistent."
+      .. " You continue the code, so start your suggestion with the next word to be placed after the cursor."
+  })
   table.insert(messages, { role = "user", content = "I need you to complete the code." })
 
   for _, buf in ipairs(buffers) do
