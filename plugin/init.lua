@@ -5,6 +5,7 @@ _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
 _G.current_extmark_id = nil
 _G.current_suggestion = nil
+_G.deepseek_request_body = {}
 
 -- Default keymappings
 local default_opts = {
@@ -12,7 +13,7 @@ local default_opts = {
   suggest_lines_keymap = "<M-ESC>",
   accept_all_keymap = "<M-PageDown>",
   accept_line_keymap = "<M-Down>",
-  debounce_time = 500, -- Debounce time in milliseconds
+  debounce_time = 1000, -- Debounce time in milliseconds
 }
 
 -- Read user configuration
@@ -38,7 +39,7 @@ _G.suggest = function()
   end
 
   timer = vim.defer_fn(function()
-    local deepseek_request_body = {
+    _G.deepseek_request_body = {
       model = "deepseek-chat",
       echo = false,
       frequency_penalty = 0,
@@ -58,7 +59,7 @@ _G.suggest = function()
 
   -- Asynchronously make the POST request
   curl.post('https://api.deepseek.com/chat/completions', {
-    body = vim.fn.json_encode(deepseek_request_body),
+    body = vim.fn.json_encode(_G.deepseek_request_body),
     headers = {
       ["Content-Type"] = "application/json",
       ["Accept"] = "application/json",
