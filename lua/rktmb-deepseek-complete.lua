@@ -78,6 +78,7 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
   table.insert(messages, { role = "user", content = text_after_cursor })
   table.insert(messages, { role = "assistant", content = "What line do you want me to continue?" })
   table.insert(messages, { role = "user", content = line_the_cursor_is_on })
+  table.insert(messages, { role = "assistant", content = line_the_cursor_is_on, prefix=true })
 
   -- log the messages
   M.log("============ Messages table:")

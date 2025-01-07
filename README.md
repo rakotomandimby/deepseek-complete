@@ -4,6 +4,20 @@ This plugin is a Neovim plugin that allows you to use the DeepSeek API to do do 
 
 DeepSeek is not flat cost, it is pay-as-you-go, so completions are manually triggered by the user, not as-you-type.
 
+# Context sending
+
+The plugins sends the content **all** the open buffers as context to the DeepSeek API.
+
+For example, if you open NeoVim with `nvim **/*.lua *.lua` and you ask DeepSeek to complete your file, 
+it will send the content of `**/*.lua` and `*.lua` to the DeepSeek API in a multi-turn chat and then it will ask DeepSeek to complete the current buffer.
+
+This will optimize the completions, but it will also send the content of all the files in your project to the DeepSeek API.
+
+Be careful with this, as:
+
+- It can be expensive if you have a lot of open buffers.
+- Token calculation is **not done** before sending the context, so it the API might refuse you request if you exceed the token limit.
+
 # Installation
 
 Install the plugin with your favorite package manager:
