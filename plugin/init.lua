@@ -25,6 +25,7 @@ local function process_deepseek_response(response)
   vim.schedule(function()  -- Use vim.schedule to run this in the main thread
     local response_body = vim.fn.json_decode(response.body)
     if response_body.choices and #response_body.choices > 0 then
+      vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
       local choice = response_body.choices[1]
       local suggestion = choice.message.content
       ignore_text_changed = true -- Set the guard before setting extmarks
