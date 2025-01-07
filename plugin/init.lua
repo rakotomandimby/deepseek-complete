@@ -27,8 +27,6 @@ local function process_deepseek_response(response)
     if response_body.choices and #response_body.choices > 0 then
       local choice = response_body.choices[1]
       local suggestion = choice.message.content
-      rktmb_deepseek_complete.log("\n\nSuggestion from DeepSeek API:")
-      rktmb_deepseek_complete.log(suggestion)
       rktmb_deepseek_complete.set_suggestion_extmark(suggestion)
       _G.current_suggestion = suggestion -- Store the current suggestion
     end
@@ -43,8 +41,8 @@ _G.suggest = function()
     return
   end
 
-  rktmb_deepseek_complete.api_call_in_progress = true
-  rktmb_deepseek_complete.last_api_call_time = now
+  api_call_in_progress = true
+  last_api_call_time = now
   local deepseek_request_body = {
     model = "deepseek-chat",
     echo = false,
@@ -72,9 +70,7 @@ _G.suggest = function()
       ["Authorization"] = "Bearer " .. user_opts.deepseek_api_key
     },
     callback = function(response)
-      rktmb_deepseek_complete.log("Response from DeepSeek API:")
-      rktmb_deepseek_complete.log(response.body)
-      rktmb_deepseek_complete.api_call_in_progress = false -- Reset the flag after receiving the response
+      api_call_in_progress = false -- Reset the flag after receiving the response
       process_deepseek_response(response)
     end
   })
