@@ -23,19 +23,21 @@ function M.remove_markdown_delimiters(text)
   return table.concat(lines, "\n")
 end
 
---[[ Adds or updates an extmark with the given text.
---  If an extmark already exists, it will be updated. Otherwise, a new one will be created.
---  The extmark is placed after the current cursor position.
---]]
 
 function M.set_suggestion_extmark(suggestion)
   local current_buf = vim.api.nvim_get_current_buf()
   local position = vim.api.nvim_win_get_cursor(0)
   local row = position[1] - 1 -- Adjust to 0-based indexing
   local col = position[2]
+
+  -- Split the suggestion into lines
   local lines = vim.split(suggestion, '\n', true)
-  local end_row = math.min(row + #lines - 1, vim.api.nvim_buf_line_count(current_buf) - 1) -- Cap end_row
-  local end_col = string.len(lines[#lines])
+
+  -- Create virtual text segments for each line
+  local virt_text_lines = {}
+  for _, line in ipairs(lines) do
+    table.insert(virt_text_lines, {line, "Comment"})
+  end
 
 
   if _G.current_extmark_id then
@@ -46,9 +48,7 @@ function M.set_suggestion_extmark(suggestion)
       row,
       col,
       {
-        end_row = end_row,
-        end_col = end_col,
-        virt_text =  {{suggestion, "Comment"}},
+        virt_text = virt_text_lines,
         virt_text_pos = "overlay"
       }
     )
@@ -60,9 +60,7 @@ function M.set_suggestion_extmark(suggestion)
       row,
       col,
       {
-        end_row = end_row,
-        end_col = end_col,
-        virt_text = {{suggestion, "Comment"}},
+        virt_text = virt_text_lines,
         virt_text_pos = "overlay"
       }
     )
