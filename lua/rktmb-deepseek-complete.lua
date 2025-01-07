@@ -24,17 +24,23 @@ function M.remove_markdown_delimiters(text)
 end
 
 function M.get_text_before_cursor()
+  M.log("get_text_before_cursor")
   local current_line, current_col = vim.api.nvim_win_get_cursor(0)
   local lines = vim.api.nvim_buf_get_lines(0, 0, current_line, false)
   lines[#lines] = string.sub(lines[#lines], 1, current_col)
-  return table.concat(lines, "\n")
+  local result = table.concat(lines, "\n")
+  M.log(result)
+  return result
 end
 
 function M.get_text_after_cursor()
+  M.log("get_text_after_cursor")
   local current_line, current_col = vim.api.nvim_win_get_cursor(0)
   local lines = vim.api.nvim_buf_get_lines(0, current_line - 1, -1, false)
   lines[1] = string.sub(lines[1], current_col + 1)  -- Get text from the cursor position in the current line
-  return table.concat(lines, "\n")
+  local result = table.concat(lines, "\n")
+  M.log(result)
+  return result
 end
 
 function M.get_open_buffers()
@@ -44,6 +50,7 @@ function M.get_open_buffers()
     if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_get_name(buf) ~= "" and buf ~= current_buf then
       table.insert(buffers, buf)
     end
+    M.log(vim.api.nvim_buf_get_name(buf))
   end
   return buffers
 end
