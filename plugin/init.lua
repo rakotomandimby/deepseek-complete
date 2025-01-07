@@ -74,21 +74,21 @@ vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()
 
 -- Add mappings for letter keys, punctuation keys, and space
 for i = 97, 122 do  -- a-z
-  vim.api.nvim_set_keymap("i", string.char(i), "<C-o>lua suggest()<CR>" .. string.char(i), { noremap = true, silent = true })
+  vim.api.nvim_set_keymap("i", string.char(i), "<Cmd>lua suggest()<CR>" .. string.char(i), { noremap = true, silent = true })
 end
 
 for i = 65, 90 do  -- A-Z
-  vim.api.nvim_set_keymap("i", string.char(i), "<C-o>lua suggest()<CR>" .. string.char(i), { noremap = true, silent = true })
+  vim.api.nvim_set_keymap("i", string.char(i), "<Cmd>lua suggest()<CR>" .. string.char(i), { noremap = true, silent = true })
 end
 
 -- Punctuation keys
 local punctuation_keys = { "!", '"', "#", "$", "%%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~" }
 for _, key in ipairs(punctuation_keys) do
-  vim.api.nvim_set_keymap("i", key, "<C-o>lua suggest()<CR>" .. key, { noremap = true, silent = true })
+  vim.api.nvim_set_keymap("i", key, "<Cmd>lua suggest()<CR>" .. key, { noremap = true, silent = true })
 end
 
 -- Space key
-vim.api.nvim_set_keymap("i", " ", "<C-o>lua suggest()<CR> ", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", " ", "<Cmd>lua suggest()<CR> ", { noremap = true, silent = true })
 
 -- Uncomment these if you want to use them
 -- vim.api.nvim_set_keymap("i", user_opts.accept_all_keymap,    "<Cmd>lua accept_the_whole_suggestion()<CR>", { noremap = true, silent = true })
