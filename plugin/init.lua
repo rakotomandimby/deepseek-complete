@@ -18,7 +18,7 @@ local user_opts = vim.tbl_deep_extend("force", default_opts, vim.g.rktmb_deepsee
 
 
 local function process_deepseek_response(response)
-  if response.status == 200 then
+  if response.status < 599 then
     vim.schedule(function()
       local body = vim.fn.json_decode(response.body)
       if body.choices and #body.choices > 0 then
