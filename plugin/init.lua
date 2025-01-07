@@ -5,7 +5,6 @@ _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
 _G.current_extmark_id = nil
 _G.current_suggestion = nil
-_G.deepseek_request_body = {}
 
 -- Default keymappings
 local default_opts = {
@@ -13,7 +12,6 @@ local default_opts = {
   suggest_lines_keymap = "<M-ESC>",
   accept_all_keymap = "<M-PageDown>",
   accept_line_keymap = "<M-Down>",
-  debounce_time = 1000, -- Debounce time in milliseconds
 }
 
 -- Read user configuration
@@ -30,36 +28,27 @@ local function process_deepseek_response(response)
   end)
 end
 
-local timer = nil  -- Timer for debouncing
-
 _G.suggest = function()
-  -- Clear any existing timer
-  if timer ~= nil then
-    timer:stop()
-  end
-
-  timer = vim.defer_fn(function()
-    _G.deepseek_request_body = {
-      model = "deepseek-chat",
-      echo = false,
-      frequency_penalty = 0,
-      max_tokens = 4096,
-      presence_penalty = 0,
-      stop = nil,
-      stream = false,
-      stream_options = nil,
-      temperature = 1,
-      top_p = 1,
-      messages = rktmb_deepseek_complete.build_messages_table(
-        rktmb_deepseek_complete.get_text_before_cursor(),
-        rktmb_deepseek_complete.get_text_after_cursor()
-      )
-    }
-  end, user_opts.debounce_time)
+  local deepseek_request_body = {
+    model = "deepseek-chat",
+    echo = false,
+    frequency_penalty = 0,
+    max_tokens = 4096,
+    presence_penalty = 0,
+    stop = nil,
+    stream = false,
+    stream_options = nil,
+    temperature = 1,
+    top_p = 1,
+    messages = rktmb_deepseek_complete.build_messages_table(
+      rktmb_deepseek_complete.get_text_before_cursor(),
+      rktmb_deepseek_complete.get_text_after_cursor()
+    )
+  }
 
   -- Asynchronously make the POST request
   curl.post('https://api.deepseek.com/chat/completions', {
-    body = vim.fn.json_encode(_G.deepseek_request_body),
+    body = vim.fn.json_encode(deepseek_request_body),
     headers = {
       ["Content-Type"] = "application/json",
       ["Accept"] = "application/json",
@@ -82,15 +71,6 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 
 -- Key mappings
 vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
-
--- Add mappings for letter keys, punctuation keys, and space
-for i = 97, 122 do  -- a-z
-  vim.api.nvim_set_keymap("i", string.char(i), "<Cmd>lua suggest()<CR>" .. string.char(i), { noremap = true, silent = true })
-end
-
-for i = 65, 90 do  -- A-Z
-  vim.api.nvim_set_keymap("i", string.char(i), "<Cmd>lua suggest()<CR>" .. string.char(i), { noremap = true, silent = true })
-end
 
 -- Punctuation keys
 local punctuation_keys = { "!", '"', "#", "$", "%%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~" }
