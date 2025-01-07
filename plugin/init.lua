@@ -16,6 +16,7 @@ local default_opts = {
 
 -- Read user configuration
 local user_opts = vim.tbl_deep_extend("force", default_opts, vim.g.rktmb_deepseek_complete_opts or {})
+
 local function process_deepseek_response(response)
   vim.schedule(function()  -- Use vim.schedule to run this in the main thread
     local response_body = vim.fn.json_decode(response.body)
@@ -24,6 +25,8 @@ local function process_deepseek_response(response)
       local suggestion = choice.message.content
       rktmb_deepseek_complete.log("\n\nSuggestion from DeepSeek API:")
       rktmb_deepseek_complete.log(suggestion)
+      rktmb_deepseek_complete.set_suggestion_extmark(suggestion)
+      _G.current_suggestion = suggestion -- Store the current suggestion
     end
   end)
 end
@@ -42,7 +45,8 @@ _G.suggest = function()
     top_p = 1,
     messages = rktmb_deepseek_complete.build_messages_table(
       rktmb_deepseek_complete.get_text_before_cursor(),
-      rktmb_deepseek_complete.get_text_after_cursor()
+      rktmb_deepseek_complete.get_text_after_cursor(),
+      rktmb_deepseek_complete.get_text_before_cursor_line()
     )
   }
 
@@ -73,10 +77,10 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
 
 -- Punctuation keys
-local punctuation_keys = { "!", '"', "#", "$", "%%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~" }
-for _, key in ipairs(punctuation_keys) do
-  vim.api.nvim_set_keymap("i", key, "<Cmd>lua suggest()<CR>" .. key, { noremap = true, silent = true })
-end
+-- local punctuation_keys = { "!", '"', "#", "$", "%%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~" }
+-- for _, key in ipairs(punctuation_keys) do
+--   vim.api.nvim_set_keymap("i", key, "<Cmd>lua suggest()<CR>" .. key, { noremap = true, silent = true })
+-- end
 
 -- Space key
 vim.api.nvim_set_keymap("i", " ", "<Cmd>lua suggest()<CR> ", { noremap = true, silent = true })
