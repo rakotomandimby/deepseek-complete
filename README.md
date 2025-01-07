@@ -38,6 +38,7 @@ Users can customize the key mappings by setting `vim.g.rktmb_deepseek_complete_o
 
 As of writing, the following configuration options are available:
 
+- `deepseek_api_key`: You can get it from [DeepSeek](https://platform.deepseek.com/api_keys). Defaults to the value of the `DEEPSEEK_API_KEY` environment variable.
 - `suggest_keymap`: The keymap to trigger completions. Defaults to `<M-ESC>`.
 - `accept_all_keymap`: The keymap to accept all completions. Defaults to `<M-PageDown>`.
 - `acceptp_line_keymap`: The keymap to accept the first line of the completion. Defaults to `<M-Down>`.
@@ -46,6 +47,7 @@ To change the **suggest** keymap to `<C-j>`, set the following to a lua file tha
 
 ```lua
 vim.g.rktmb_deepseek_complete_opts = {
+  deepseek_api_key = "YOUR_DEEPSEEK_API_KEY"
   suggest_keymap = "<C-j>",
 }
 ```

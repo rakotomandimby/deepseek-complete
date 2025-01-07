@@ -8,6 +8,7 @@ _G.current_suggestion = nil
 
 -- Default keymappings
 local default_opts = {
+  deepseek_api_key = os.getenv("DEEPSEEK_API_KEY"),
   suggest_lines_keymap = "<M-ESC>",
   accept_all_keymap = "<M-PageDown>",
   accept_line_keymap = "<M-Down>",
@@ -150,7 +151,7 @@ _G.suggest_lines = function()
     headers = {
       ["Content-Type"] = "application/json",
       ["Accept"] = "application/json",
-      ["Authorization"] = "Bearer " .. deepseek_api_token
+      ["Authorization"] = "Bearer " .. user_opts.deepseek_api_key
     },
     callback = function(response)
       process_deepseek_response(response)
