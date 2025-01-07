@@ -56,10 +56,16 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
   table.insert(messages, {
     role = "system",
     content = "You are a software developer assistant that will complete code based on the context provided."
-    .." Just answer with indented raw code, NO explanations, NO markdown formatting."
+    .. " Just answer with indented raw code, NO explanations, NO markdown formatting."
     .. " The concatenation of the lines before the cursor,"
     .. " the line the cursor is on,"
-    .. " the lines after the cursor AND the lines you propose MUST be valid code that can be executed." })
+    .. " the lines after the cursor"
+    .. " AND the lines you propose"
+    .. " MUST be valid code that can be executed."
+    .. " If you think the there is nothing to complete more,"
+    .. " just say 'I think there is nothing to complete more': "
+    .. " Do not try to complete more than necessary."
+    })
   table.insert(messages, { role = "user", content = "I need you to complete code." })
 
   for _, buf in ipairs(buffers) do
