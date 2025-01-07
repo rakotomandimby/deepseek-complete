@@ -28,7 +28,9 @@ local function process_deepseek_response(response)
       local choice = response_body.choices[1]
       local suggestion = choice.message.content
       rktmb_deepseek_complete.set_suggestion_extmark(suggestion)
-      _G.current_suggestion = suggestion -- Store the current suggestion
+      _G.current_suggestion = suggestion
+      rktmb_deepseek_complete.log("\n\nSuggestion from DeepSeek API:")
+      rktmb_deepseek_complete.log(suggestion)
     end
   end)
 end
