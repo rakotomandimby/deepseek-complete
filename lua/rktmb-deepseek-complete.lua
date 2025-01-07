@@ -39,9 +39,12 @@ function M.get_open_buffers()
 
   return buffers
 end
+
 -- get the content of a given buffer
 function M.get_buffer_content(buf)
+  M.log("get_buffer_content") 
   local content = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  M.log("get_buffer_content: " .. vim.inspect(content)) -- Correct logging
   return table.concat(content, "\n")
 end
 
@@ -49,6 +52,7 @@ end
 function M.get_current_buffer_name()
   return vim.api.nvim_buf_get_name(0)
 end
+
 
 function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_cursor_is_on)
   local buffers = M.get_open_buffers()
@@ -64,12 +68,8 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
 
   for _, buf in ipairs(buffers) do
     local filename = vim.api.nvim_buf_get_name(buf)
-    if not filename:match("%%.md$") then  -- Lua pattern matching for ".md" at the end
+    if not filename:match("%%%%.md$") then  -- Lua pattern matching for ".md" at the end
       local content = M.get_buffer_content(buf)
-      -- log the filename then the content
-      M.log(filename)
-      M.log(content)
-
       table.insert(messages, { role = "assistant", content = "Give me the content of " .. filename })
       table.insert(messages, { role = "user", content = content })
     end
@@ -85,4 +85,6 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
 
   return messages
 end
+
+
 return M
