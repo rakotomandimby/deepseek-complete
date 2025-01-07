@@ -41,7 +41,6 @@ function M.get_buffer_content(buf)
   end
   local content = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   local name = vim.api.nvim_buf_get_name(buf)
-  M.log(name .. "\n".. table.concat(content, "\n"))
   return table.concat(content, "\n")
 end
 
@@ -79,6 +78,12 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
   table.insert(messages, { role = "user", content = text_after_cursor })
   table.insert(messages, { role = "assistant", content = "What line do you want me to continue?" })
   table.insert(messages, { role = "user", content = line_the_cursor_is_on })
+
+  -- log the messages
+  M.log("Messages table:")
+  for _, message in ipairs(messages) do
+    M.log(message.role .. ": " .. message.content)
+  end
 
   return messages
 end
