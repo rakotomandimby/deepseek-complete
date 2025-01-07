@@ -24,6 +24,9 @@ function M.remove_markdown_delimiters(text)
 end
 
 function M.set_suggestion_extmark(suggestion)
+  -- Remove Markdown code block delimiters from the suggestion
+  suggestion = M.remove_markdown_delimiters(suggestion)
+
   local current_buf = vim.api.nvim_get_current_buf()
   local position = vim.api.nvim_win_get_cursor(0)
   local row = position[1] - 1 -- Adjust to 0-based indexing
@@ -32,38 +35,40 @@ function M.set_suggestion_extmark(suggestion)
   -- Split the suggestion into lines
   local lines = vim.split(suggestion, '\n', true)
 
-  -- Create virtual text segments for each line
-  local virt_text_lines = {}
-  for _, line in ipairs(lines) do
-    table.insert(virt_text_lines, {line, "Comment"})
-  end
+  -- Clear existing extmarks
+  vim.api.nvim_buf_clear_namespace(current_buf, _G.ns_id, 0, -1)
 
   -- Insert each line as a separate extmark
   for i, line in ipairs(lines) do
-    local extmark_row = row + i - 1 -- Increment the row for each line
-    if _G.current_extmark_id then
-      -- Update existing extmark
-      vim.api.nvim_buf_set_extmark(
-        current_buf,
-        _G.ns_id,
-        extmark_row,
-        col,
-        {
-          virt_text = {{line, "Comment"}},
-        }
-      )
-    else
-      -- Create new extmark
-      _G.current_extmark_id = vim.api.nvim_buf_set_extmark(
-        current_buf,
-        _G.ns_id,
-        extmark_row,
-        col,
-        {
-          virt_text = {{line, "Comment"}},
-        }
-      )
+    local extmark_row = row + i - 1 -- Adjust row for each line
+
+    -- Ensure the extmark row is within buffer bounds
+    local line_count = vim.api.nvim_buf_line_count(current_buf)
+    if extmark_row >= line_count then
+      extmark_row = line_count - 1
     end
+
+    -- Adjust column for lines beyond the first
+    local extmark_col = (i == 1) and col or 0
+
+    -- Truncate col if it exceeds line length
+    local line_length = #vim.api.nvim_buf_get_lines(current_buf, extmark_row, extmark_row + 1, false)[1]
+    if extmark_col > line_length then
+      extmark_col = line_length
+    end
+
+    -- Set the extmark
+    vim.api.nvim_buf_set_extmark(
+      current_buf,
+      _G.ns_id,
+      extmark_row,
+      extmark_col,
+      {
+        virt_text = {{line, "Comment"}},
+        virt_text_pos = 'overlay', -- This positions the virtual text over the existing text
+        hl_mode = 'combine',
+      }
+    )
   end
 end
 
