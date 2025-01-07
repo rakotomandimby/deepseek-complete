@@ -128,7 +128,7 @@ _G.suggest_lines = function()
   end
 
   local deepseek_request_for_lines_body = {
-    model = "deepseek-chat",
+    model = "deepseek-coder",
     echo = false,
     frequency_penalty = 0,
     max_tokens = 4096,
