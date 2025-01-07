@@ -84,13 +84,14 @@ vim.api.nvim_create_autocmd("InsertLeave", {
     vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
   end
 })
--- vim.api.nvim_create_autocmd("TextChangedI", { -- Triggered on every character typed in insert mode
---   pattern = "*",
---   callback = function()
---     -- Clear existing extmarks when typing.
---     vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
---   end
--- })
+
+vim.api.nvim_create_autocmd("TextChangedI", { -- Triggered on every character typed in insert mode
+  pattern = "*",
+  callback = function()
+    -- Clear existing extmarks when typing.
+    vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
+  end
+})
 
 -- Key mappings
 vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
