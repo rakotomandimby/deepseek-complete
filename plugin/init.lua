@@ -54,6 +54,8 @@ _G.suggest = function()
       ["Authorization"] = "Bearer " .. user_opts.deepseek_api_key
     },
     callback = function(response)
+      rktmb_deepseek_complete.log("Response from DeepSeek API:")
+      rktmb_deepseek_complete.log(response.body)
       process_deepseek_response(response)
     end
   })
