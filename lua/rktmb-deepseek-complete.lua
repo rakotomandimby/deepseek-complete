@@ -65,7 +65,6 @@ function M.set_suggestion_extmark(suggestion)
       extmark_col,
       {
         virt_text = {{line, "Comment"}},
-        virt_text_pos = 'overlay', -- This positions the virtual text over the existing text
         hl_mode = 'combine',
       }
     )
