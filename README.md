@@ -9,12 +9,12 @@ DeepSeek is not flat cost, so completions are manually triggered by the user, no
 Install the plugin with your favorite package manager:
 
 ```lua
-use 'mihamina/rktmb-deepseek-complete.nvim'
+use 'rakotomandimby/rktmb-deepseek-complete.nvim'
 ```
 
 ```lua
 {
-    "mihamina/rktmb-deepseek-complete.nvim"
+    "rakotomandimby/rktmb-deepseek-complete.nvim"
 }
 ```
 
