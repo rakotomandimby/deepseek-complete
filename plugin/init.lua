@@ -8,6 +8,7 @@ _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
 _G.current_extmark_id = nil
 _G.current_suggestion = nil
+_G.ignore_text_changed = false
 
 -- Default keymappings
 local default_opts = {
@@ -28,9 +29,9 @@ local function process_deepseek_response(response)
       vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
       local choice = response_body.choices[1]
       local suggestion = choice.message.content
-      ignore_text_changed = true -- Set the guard before setting extmarks
+      _G.ignore_text_changed = true -- Set the guard before setting extmarks
       rktmb_deepseek_complete.set_suggestion_extmark(suggestion)
-      ignore_text_changed = false -- Unset the guard after setting extmarks
+      _G.ignore_text_changed = false -- Unset the guard after setting extmarks
       _G.current_suggestion = suggestion
       rktmb_deepseek_complete.log("\n\nSuggestion from DeepSeek API:")
       rktmb_deepseek_complete.log(suggestion)
@@ -91,7 +92,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 vim.api.nvim_create_autocmd("TextChangedI", { -- Triggered *after* a printable character is typed
   pattern = "*",
   callback = function()
-    if not ignore_text_changed then -- Only clear if not a plugin-initiated change
+    if not _G.ignore_text_changed then -- Only clear if not a plugin-initiated change
       vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
     end
   end
