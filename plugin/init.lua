@@ -204,9 +204,9 @@ _G.accept_one_suggestion_line = function()
   vim.api.nvim_win_set_cursor(0, { current_line + 1, #first_suggestion_line }) -- + 1 here is crucial
 
   -- Clear existing extmark and suggestion
-  vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
-  _G.current_extmark_id = nil
-  _G.current_suggestion = nil
+  -- vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
+  -- _G.current_extmark_id = nil
+  -- _G.current_suggestion = nil
 
   -- Trigger a new suggestion
   -- vim.schedule(_G.suggest) -- Call suggest directly, no need for an anonymous function
