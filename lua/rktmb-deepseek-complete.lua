@@ -1,7 +1,6 @@
 -- Initialize a module
 local M = {}
 
--- Function to log a message into /tmp/rktmb-deepseek-complete.log
 function M.log(message)
   local log_file = io.open("/tmp/rktmb-deepseek-complete.log", "a")
   -- check if log_file is nil
@@ -24,10 +23,25 @@ function M.remove_markdown_delimiters(text)
   return table.concat(lines, "\n")
 end
 
+function M.get_text_before_cursor()
+  local current_line, current_col = vim.api.nvim_win_get_cursor(0)
+  local lines = vim.api.nvim_buf_get_lines(0, 0, current_line, false)
+  lines[#lines] = string.sub(lines[#lines], 1, current_col)
+  return table.concat(lines, "\n")
+end
+
+function M.get_text_after_cursor()
+  local current_line, current_col = vim.api.nvim_win_get_cursor(0)
+  local lines = vim.api.nvim_buf_get_lines(0, current_line - 1, -1, false)
+  lines[1] = string.sub(lines[1], current_col + 1)  -- Get text from the cursor position in the current line
+  return table.concat(lines, "\n")
+end
+
 function M.get_open_buffers()
   local buffers = {}
+  local current_buf = vim.api.nvim_get_current_buf()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_get_name(buf) ~= "" then
+    if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_get_name(buf) ~= "" and buf ~= current_buf then
       table.insert(buffers, buf)
     end
   end
@@ -40,7 +54,6 @@ function M.get_buffer_content(buf)
     vim.fn.bufload(buf)
   end
   local content = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-  local name = vim.api.nvim_buf_get_name(buf)
   return table.concat(content, "\n")
 end
 
@@ -50,20 +63,20 @@ function M.get_current_buffer_name()
 end
 
 
-function M.build_messages_table_for_lines(text_before_cursor, text_after_cursor, line_the_cursor_is_on)
+function M.build_messages_table(text_before_cursor, text_after_cursor)
   local buffers = M.get_open_buffers()
   local messages = {}
   table.insert(messages, {
     role = "system",
     content = "You are a software developer assistant that will complete the code from the surcor position, based on the provided context."
     .. " Just answer with indented raw code, NO explanations, NO markdown formatting."
-    .. " The concatenation of the lines before the cursor,"
-    .. " the line the cursor is on,"
-    .. " the lines after the cursor"
-    .. " AND the lines you propose"
-    .. " MUST be valid code that can be executed."
+    .. " The concatenation of the text before the cursor,"
+    .. " the text you propose,"
+    .. " AND the text after your suggestion"
+    .. " MUST be valid and consistent."
+    .. " You continue the text, so start your suggestion with the next word to be placed after the cursor."
     })
-  table.insert(messages, { role = "user", content = "I need you to complete code." })
+  table.insert(messages, { role = "user", content = "I need you to complete the text." })
 
   for _, buf in ipairs(buffers) do
     local filename = vim.api.nvim_buf_get_name(buf)
@@ -80,9 +93,12 @@ function M.build_messages_table_for_lines(text_before_cursor, text_after_cursor,
   table.insert(messages, { role = "assistant", content = "What is after the cursor?" })
   table.insert(messages, { role = "user", content = "From the cursor to the end of the buffer, we have:\n```\n" .. text_after_cursor .. "\n```" })
   table.insert(messages, { role = "assistant", content = "What line do you want me to continue?" })
-  table.insert(messages, { role = "user", content = "The cursor is at the end of the line `".. line_the_cursor_is_on .. "`."
-                                                  .." Given what is before and after the cursor, write the continuation of that line" })
-
+  table.insert(messages, {
+    role = "user",
+    content = "Get the text from the beginning of the buffer to the cursor and write a continuation of that line."
+            .." Be consistent with the text after the cursor. "
+            .." You continue the text, so start your suggestion with the next word to be placed after the cursor."
+            .." The concatenation of the text before the cursor, the text you propose, and the text after your suggestion MUST be valid."})
   -- log the messages
   M.log("============ Messages table:")
   for _, message in ipairs(messages) do
