@@ -55,16 +55,13 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
   local messages = {}
   table.insert(messages, {
     role = "system",
-    content = "You are a software developer assistant that will complete code based on the context provided."
+    content = "You are a software developer assistant that will complete the code from the surcor position, based on the provided context."
     .. " Just answer with indented raw code, NO explanations, NO markdown formatting."
     .. " The concatenation of the lines before the cursor,"
     .. " the line the cursor is on,"
     .. " the lines after the cursor"
     .. " AND the lines you propose"
     .. " MUST be valid code that can be executed."
-    .. " If you think the there is nothing to complete more,"
-    .. " just say 'I think there is nothing to complete more': "
-    .. " Do not try to complete more than necessary."
     })
   table.insert(messages, { role = "user", content = "I need you to complete code." })
 
@@ -72,18 +69,19 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
     local filename = vim.api.nvim_buf_get_name(buf)
     if not filename:match("%%%%.md$") then  -- Lua pattern matching for ".md" at the end
       local content = M.get_buffer_content(buf)
-      table.insert(messages, { role = "assistant", content = "Give me the content of " .. filename })
-      table.insert(messages, { role = "user", content = content })
+      table.insert(messages, { role = "assistant", content = "Give me the content of `" .. filename .. "`" })
+      table.insert(messages, { role = "user", content = "The content of `" .. filename .. "` is:\n```\n" .. content .. "\n```" })
     end
   end
   table.insert(messages, { role = "assistant", content = "What is the current buffer?" })
-  table.insert(messages, { role = "user", content = M.get_current_buffer_name() })
+  table.insert(messages, { role = "user", content = "The current buffer is `" .. M.get_current_buffer_name() .. "`" })
   table.insert(messages, { role = "assistant", content = "What is before the cursor?" })
-  table.insert(messages, { role = "user", content = text_before_cursor })
+  table.insert(messages, { role = "user", content = "From the begining of the buffer to the cursor, we have:\n```\n" .. text_before_cursor .. "\n```" })
   table.insert(messages, { role = "assistant", content = "What is after the cursor?" })
-  table.insert(messages, { role = "user", content = text_after_cursor })
+  table.insert(messages, { role = "user", content = "From the cursor to the end of the buffer, we have:\n```\n" .. text_after_cursor .. "\n```" })
   table.insert(messages, { role = "assistant", content = "What line do you want me to continue?" })
-  table.insert(messages, { role = "user", content = line_the_cursor_is_on })
+  table.insert(messages, { role = "user", content = "The cursor is at the end of the line `".. line_the_cursor_is_on .. "`."
+                                                  .." Given what is before and after the cursor, write the continuation of that line" })
 
   -- log the messages
   M.log("============ Messages table:")
