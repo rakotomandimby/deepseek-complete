@@ -91,7 +91,8 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 
 local function is_printable_char(char)
   local char_number = tonumber(char)
-  return char_number >= 32 and char_number <= 126  -- ASCII printable characters
+  rktmb_deepseek_complete.log("keyboard: " .. char)
+  return (char_number == nil ) or (char_number >= 32 and char_number <= 126)
 end
 
 vim.api.nvim_create_autocmd("InsertCharPre", {
