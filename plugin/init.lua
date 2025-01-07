@@ -88,7 +88,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   end
 })
 
-vim.api.nvim_create_autocmd("TextChangedP", { -- Triggered *after* a printable character is typed
+vim.api.nvim_create_autocmd("TextChangedI", { -- Triggered *after* a printable character is typed
   pattern = "*",
   callback = function()
     if not ignore_text_changed then -- Only clear if not a plugin-initiated change
