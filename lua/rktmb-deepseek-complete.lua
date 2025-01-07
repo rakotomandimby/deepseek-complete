@@ -31,20 +31,14 @@ function M.get_open_buffers()
       table.insert(buffers, buf)
     end
   end
-
-  -- log the list of buffers
-  for _, buf in ipairs(buffers) do
-    M.log(vim.api.nvim_buf_get_name(buf))
-  end
-
   return buffers
 end
 
 -- get the content of a given buffer
 function M.get_buffer_content(buf)
-  M.log("get_buffer_content") 
   local content = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-  M.log("get_buffer_content: " .. vim.inspect(content)) -- Correct logging
+  local name = vim.api.nvim_buf_get_name(buf)
+  M.log(name .. "get_buffer_content: " .. vim.inspect(content)) -- Correct logging
   return table.concat(content, "\n")
 end
 
