@@ -40,8 +40,8 @@ _G.suggest = function()
     temperature = 1,
     top_p = 1,
     messages = rktmb_deepseek_complete.build_messages_table(
-      rktmb_deepseek_complete.text_before_cursor,
-      rktmb_deepseek_complete.text_after_cursor
+      rktmb_deepseek_complete.get_text_before_cursor,
+      rktmb_deepseek_complete.get_text_after_cursor
     )
   }
 
