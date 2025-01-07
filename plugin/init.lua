@@ -12,6 +12,7 @@ local default_opts = {
   suggest_lines_keymap = "<M-ESC>",
   accept_all_keymap = "<M-PageDown>",
   accept_line_keymap = "<M-Down>",
+  debounce_time = 500, -- Debounce time in milliseconds
 }
 
 -- Read user configuration
@@ -28,23 +29,32 @@ local function process_deepseek_response(response)
   end)
 end
 
+local timer = nil  -- Timer for debouncing
+
 _G.suggest = function()
-  local deepseek_request_body = {
-    model = "deepseek-chat",
-    echo = false,
-    frequency_penalty = 0,
-    max_tokens = 4096,
-    presence_penalty = 0,
-    stop = nil,
-    stream = false,
-    stream_options = nil,
-    temperature = 1,
-    top_p = 1,
-    messages = rktmb_deepseek_complete.build_messages_table(
-      rktmb_deepseek_complete.get_text_before_cursor(),
-      rktmb_deepseek_complete.get_text_after_cursor()
-    )
-  }
+  -- Clear any existing timer
+  if timer ~= nil then
+    timer:stop()
+  end
+
+  timer = vim.defer_fn(function()
+    local deepseek_request_body = {
+      model = "deepseek-chat",
+      echo = false,
+      frequency_penalty = 0,
+      max_tokens = 4096,
+      presence_penalty = 0,
+      stop = nil,
+      stream = false,
+      stream_options = nil,
+      temperature = 1,
+      top_p = 1,
+      messages = rktmb_deepseek_complete.build_messages_table(
+        rktmb_deepseek_complete.get_text_before_cursor(),
+        rktmb_deepseek_complete.get_text_after_cursor()
+      )
+    }
+  end, user_opts.debounce_time)
 
   -- Asynchronously make the POST request
   curl.post('https://api.deepseek.com/chat/completions', {
