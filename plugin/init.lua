@@ -197,11 +197,11 @@ _G.accept_one_suggestion_line = function()
   -- Get the first line of the suggestion
   local first_suggestion_line = _G.current_suggestion[1]
 
-  -- Insert the first line of the suggestion into the buffer
-  vim.api.nvim_buf_set_lines(bufnr, current_line - 1, current_line - 1, false, { first_suggestion_line })
+  -- Insert the first line of the suggestion into the buffer *after* the current line
+  vim.api.nvim_buf_set_lines(bufnr, current_line, current_line, false, { first_suggestion_line })
 
   -- Move the cursor to the next line, after the inserted text
-  vim.api.nvim_win_set_cursor(0, { current_line, #first_suggestion_line })
+  vim.api.nvim_win_set_cursor(0, { current_line + 1, #first_suggestion_line }) -- + 1 here is crucial
 
   -- Clear existing extmark and suggestion
   vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
@@ -209,7 +209,7 @@ _G.accept_one_suggestion_line = function()
   _G.current_suggestion = nil
 
   -- Trigger a new suggestion
-  vim.schedule(suggest) -- Use vim.schedule to avoid "recursive" lua call
+  vim.schedule(_G.suggest) -- Call suggest directly, no need for an anonymous function
 end
 
 vim.api.nvim_set_keymap("i", user_opts.suggest_keymap,      "<Cmd>lua suggest()<CR>",                     { noremap = true, silent = true })
