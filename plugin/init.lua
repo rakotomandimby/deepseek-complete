@@ -28,7 +28,7 @@ local function process_deepseek_response(response)
 
         -- Remove Markdown code block delimiters if present
         suggestion = rktmb_deepseek_complete.remove_markdown_delimiters(suggestion)
-        rktmb_deepseek_complete.log("Suggestion from DeepSeek API:")
+        rktmb_deepseek_complete.log("\n\nSuggestion from DeepSeek API:")
         rktmb_deepseek_complete.log(suggestion)
         rktmb_deepseek_complete.log("===========================")
 
@@ -204,12 +204,12 @@ _G.accept_one_suggestion_line = function()
   vim.api.nvim_win_set_cursor(0, { current_line + 1, #first_suggestion_line }) -- + 1 here is crucial
 
   -- Clear existing extmark and suggestion
-  -- vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
-  -- _G.current_extmark_id = nil
-  -- _G.current_suggestion = nil
+  vim.api.nvim_buf_del_extmark(bufnr, ns_id, _G.current_extmark_id)
+  _G.current_extmark_id = nil
+  _G.current_suggestion = nil
 
   -- Trigger a new suggestion
-  -- vim.schedule(_G.suggest) -- Call suggest directly, no need for an anonymous function
+  vim.schedule(_G.suggest) -- Call suggest directly, no need for an anonymous function
 end
 
 vim.api.nvim_set_keymap("i", user_opts.suggest_keymap,      "<Cmd>lua suggest()<CR>",                     { noremap = true, silent = true })

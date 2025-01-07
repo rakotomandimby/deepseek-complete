@@ -80,10 +80,11 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_the_
   table.insert(messages, { role = "user", content = line_the_cursor_is_on })
 
   -- log the messages
-  M.log("Messages table:")
+  M.log("============ Messages table:")
   for _, message in ipairs(messages) do
     M.log(message.role .. ": " .. message.content)
   end
+  M.log("=====================================")
 
   return messages
 end

@@ -2,7 +2,7 @@
 
 This plugin is a Neovim plugin that allows you to use the DeepSeek API to do do code completion in a Neovim buffer.
 
-DeepSeek is not flat cost, so completions are manually triggered by the user, not as-you-type.
+DeepSeek is not flat cost, it is pay-as-you-go, so completions are manually triggered by the user, not as-you-type.
 
 # Installation
 
@@ -17,7 +17,6 @@ use 'rakotomandimby/rktmb-deepseek-complete.nvim'
     "rakotomandimby/rktmb-deepseek-complete.nvim"
 }
 ```
-
 
 # Configuration
 
@@ -45,3 +44,18 @@ vim.g.rktmb_deepseek_complete_opts = {
   acceptp_line_keymap=""
 }
 ```
+
+# Usage
+
+- Enter INSERT mode
+- Type your code in the current buffer (it is better if you finish a sentence)
+- Issue `<M-ESC>` to trigger the completion
+- The completion will be inserted in **below** the current line
+
+# Next features
+
+- [ ] Add the "finish the sentence" feature (complete the current line)
+- [ ] Improve the "accept line" user experience
+- [ ] Add the "complete as-you-type" feature (heavy for the API!)
+
+If you have any ideas, feel free to open an issue or PR!
