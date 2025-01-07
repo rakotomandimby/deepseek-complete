@@ -49,7 +49,6 @@ function M.set_suggestion_extmark(suggestion)
       col,
       {
         virt_text = virt_text_lines,
-        virt_text_pos = "overlay"
       }
     )
   else
@@ -61,7 +60,6 @@ function M.set_suggestion_extmark(suggestion)
       col,
       {
         virt_text = virt_text_lines,
-        virt_text_pos = "overlay"
       }
     )
   end
