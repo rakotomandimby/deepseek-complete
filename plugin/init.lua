@@ -41,6 +41,8 @@ _G.suggest = function()
     return
   end
 
+  vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
+
   api_call_in_progress = true
   last_api_call_time = now
   local deepseek_request_body = {
@@ -80,6 +82,13 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   pattern = "*",
   callback = function()
     vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+  end
+})
+vim.api.nvim_create_autocmd("TextChangedI", { -- Triggered on every character typed in insert mode
+  pattern = "*",
+  callback = function()
+    -- Clear existing extmarks when typing.
+    vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
   end
 })
 
