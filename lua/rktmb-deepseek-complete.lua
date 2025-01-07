@@ -25,7 +25,8 @@ end
 
 function M.get_text_before_cursor()
   M.log("get_text_before_cursor")
-  local current_line, current_col = vim.api.nvim_win_get_cursor(0)
+  local position, _ = vim.api.nvim_win_get_cursor(0)
+  local current_line, current_col = table.unpack(position)
   M.log(vim.inspect(current_line))
   M.log(vim.inspect(current_col))
   local lines = vim.api.nvim_buf_get_lines(0, 0, current_line, false)
@@ -37,7 +38,8 @@ end
 
 function M.get_text_after_cursor()
   M.log("get_text_after_cursor")
-  local current_line, current_col = vim.api.nvim_win_get_cursor(0)
+  local position, _ = vim.api.nvim_win_get_cursor(0)
+  local current_line, current_col = table.unpack(position)
   M.log(vim.inspect(current_line))
   M.log(vim.inspect(current_col))
   local lines = vim.api.nvim_buf_get_lines(0, current_line - 1, -1, false)
