@@ -1,6 +1,9 @@
 local rktmb_deepseek_complete = require("rktmb-deepseek-complete")
 local curl = require('plenary.curl')
 
+local api_call_in_progress = false
+local last_api_call_time = 0
+
 _G.ns_id = vim.api.nvim_create_namespace('rktmb-deepseek-complete')
 
 _G.current_extmark_id = nil
@@ -12,6 +15,7 @@ local default_opts = {
   suggest_lines_keymap = "<M-ESC>",
   accept_all_keymap = "<M-PageDown>",
   accept_line_keymap = "<M-Down>",
+  debounce_time = 1000,
 }
 
 -- Read user configuration
@@ -32,6 +36,15 @@ local function process_deepseek_response(response)
 end
 
 _G.suggest = function()
+
+  local now = vim.loop.hrtime() / 1000000
+  if rktmb_deepseek_complete.api_call_in_progress or (now - rktmb_deepseek_complete.last_api_call_time < user_opts.debounce_time) then
+    rktmb_deepseek_complete.log("API call in progress or too recent, skipping.")
+    return
+  end
+
+  rktmb_deepseek_complete.api_call_in_progress = true
+  rktmb_deepseek_complete.last_api_call_time = now
   local deepseek_request_body = {
     model = "deepseek-chat",
     echo = false,
@@ -61,6 +74,7 @@ _G.suggest = function()
     callback = function(response)
       rktmb_deepseek_complete.log("Response from DeepSeek API:")
       rktmb_deepseek_complete.log(response.body)
+      rktmb_deepseek_complete.api_call_in_progress = false -- Reset the flag after receiving the response
       process_deepseek_response(response)
     end
   })

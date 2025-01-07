@@ -77,43 +77,31 @@ end
 
 
 function M.get_text_before_cursor()
-  M.log("get_text_before_cursor")
   local position = vim.api.nvim_win_get_cursor(0)
   local current_line = position[1]
   local current_col = position[2]
-  M.log(vim.inspect(current_line))
-  M.log(vim.inspect(current_col))
   local lines = vim.api.nvim_buf_get_lines(0, 0, current_line, false)
   lines[#lines] = string.sub(lines[#lines], 1, current_col)
   local result = table.concat(lines, "\n")
-  M.log(result)
   return result
 end
 
 function M.get_text_after_cursor()
-  M.log("get_text_after_cursor")
   local position = vim.api.nvim_win_get_cursor(0)
   local current_line = position[1]
   local current_col = position[2]
-  M.log(vim.inspect(current_line))
-  M.log(vim.inspect(current_col))
   local lines = vim.api.nvim_buf_get_lines(0, current_line - 1, -1, false)
   lines[1] = string.sub(lines[1], current_col + 1)  -- Get text from the cursor position in the current line
   local result = table.concat(lines, "\n")
-  M.log(result)
   return result
 end
 
 function M.get_text_before_cursor_line()
-  M.log("get_text_before_cursor_line")
   local position = vim.api.nvim_win_get_cursor(0)
   local current_line = position[1]
   local current_col = position[2]
-  M.log(vim.inspect(current_line))
-  M.log(vim.inspect(current_col))
   local line = vim.api.nvim_buf_get_lines(0, current_line - 1, current_line, false)[1]
   local result = string.sub(line, 1, current_col)
-  M.log(result)
   return result
 end
 
@@ -172,13 +160,6 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_to_c
   table.insert(messages, { role = "user", content = "From the cursor to the end of the buffer, we have:\n```\n" .. text_after_cursor .. "\n```" })
   table.insert(messages, { role = "assistant", content = "Give me the line you want me to continue."})
   table.insert(messages, { role = "user", content = line_to_continue })
-  -- log the messages
-  M.log("============ Messages table:")
-  for _, message in ipairs(messages) do
-    M.log(message.role .. ": " .. message.content)
-  end
-  M.log("=====================================")
-
   return messages
 end
 
