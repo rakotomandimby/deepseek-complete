@@ -89,14 +89,21 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   end
 })
 
-vim.api.nvim_create_autocmd("TextChangedI", { -- Triggered *after* a printable character is typed
+local function is_printable_char(char)
+  return char >= 32 and char <= 126  -- ASCII printable characters
+end
+
+vim.api.nvim_create_autocmd("InsertCharPre", {
   pattern = "*",
   callback = function()
-    if not _G.ignore_text_changed then -- Only clear if not a plugin-initiated change
+    local char = vim.fn.getchar()
+    if is_printable_char(char) then
+      -- Clear existing extmarks when typing a printable character
       vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
     end
   end
 })
+
 -- Key mappings
 vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
 
