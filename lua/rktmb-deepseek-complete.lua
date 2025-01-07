@@ -37,7 +37,7 @@ function M.set_suggestion_extmark(suggestion)
   local lines = vim.split(suggestion, '\n', true)
 
   -- Clear existing extmarks
-  vim.api.nvim_buf_clear_namespace(current_buf, _G.ns_id, 0, -1)
+  -- vim.api.nvim_buf_clear_namespace(current_buf, _G.ns_id, 0, -1)
 
   -- Insert empty lines into the buffer if necessary
   if #lines > 1 then
