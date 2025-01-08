@@ -2,6 +2,8 @@
 local M = {}
 
 _G.num_lines_inserted = 0
+_G.suggestion_line_index = 1
+_G.suggestion_char_index = 1
 
 function M.log(message)
   local log_file = io.open("/tmp/rktmb-deepseek-complete.log", "a")
@@ -40,16 +42,21 @@ function M.clear_suggestion()
     vim.api.nvim_buf_set_lines(current_buf, row + 1, row + 1 + _G.num_lines_inserted, false, {}) -- remove the inserted lines
     _G.num_lines_inserted = 0 -- Reset after removing lines
   end
+  _G.suggestion_line_index = 1
+  _G.suggestion_char_index = 1
 end
 
 local function split_into_words(text)
   -- Simple word splitting using whitespace as delimiter.  Consider more robust methods if needed.
-  return vim.split(text, "%%s+", {plain=true})
+  return vim.fn.split(text, "\\s\\+")
 end
 
 function M.accept_suggestion_word()
     if _G.current_suggestion then
-        local words = split_into_words(_G.current_suggestion)
+        local lines = vim.split(_G.current_suggestion, "\n")
+        local line = lines[_G.suggestion_line_index] or ""
+        local words = vim.fn.split(line:sub(_G.suggestion_char_index), "\\s\\+")
+
         if #words > 0 then
             local word = words[1]
             local current_buf = vim.api.nvim_get_current_buf()
@@ -60,75 +67,105 @@ function M.accept_suggestion_word()
             -- Insert the accepted word into the buffer
             vim.api.nvim_buf_set_text(current_buf, row, col, row, col, {word})
 
-            -- Remove the accepted word from the suggestion
-            _G.current_suggestion = string.sub(_G.current_suggestion, #word + 1)
+            -- Move cursor forward
+            vim.api.nvim_win_set_cursor(0, {row + 1, col + #word})
+
+            -- Update indices
+            _G.suggestion_char_index = _G.suggestion_char_index + #word
+            local next_char = line:sub(_G.suggestion_char_index, _G.suggestion_char_index)
+            if next_char == nil or next_char:match("%%s") then
+                -- Skip whitespace
+                _G.suggestion_char_index = _G.suggestion_char_index + 1
+            end
+
+            -- Check if we've reached the end of the line
+            if _G.suggestion_char_index > #line then
+                _G.suggestion_line_index = _G.suggestion_line_index + 1
+                _G.suggestion_char_index = 1
+                -- Move to next line in the buffer if suggestion spans multiple lines
+                vim.api.nvim_win_set_cursor(0, {row + 2, 0})  -- Move cursor to the beginning of next line
+            end
+
+            -- Reconstruct remaining suggestion
+            local remaining_lines = {}
+            for i = _G.suggestion_line_index, #lines do
+                local start_idx = (i == _G.suggestion_line_index) and _G.suggestion_char_index or 1
+                table.insert(remaining_lines, lines[i]:sub(start_idx))
+            end
+            _G.current_suggestion = table.concat(remaining_lines, '\n')
 
             -- Update the displayed suggestion (clear and redraw)
             M.clear_suggestion()
             if _G.current_suggestion and #_G.current_suggestion > 0 then
                 M.set_suggestion_extmark(_G.current_suggestion)
             end
-
         else
-            _G.current_suggestion = nil -- Clear suggestion if no words left
-            M.clear_suggestion()
+            -- No words left in the current line, move to the next line
+            _G.suggestion_line_index = _G.suggestion_line_index + 1
+            _G.suggestion_char_index = 1
+            if _G.suggestion_line_index > #lines then
+                -- All done with the suggestion
+                _G.current_suggestion = nil
+                M.clear_suggestion()
+            else
+                -- Recurse to accept word from next line
+                M.accept_suggestion_word()
+            end
         end
     end
 end
 
 function M.set_suggestion_extmark(suggestion)
-  -- Remove Markdown code block delimiters from the suggestion
-  suggestion = M.remove_markdown_delimiters(suggestion)
+    -- Remove Markdown code block delimiters from the suggestion
+    suggestion = M.remove_markdown_delimiters(suggestion)
 
-  local current_buf = vim.api.nvim_get_current_buf()
-  local position = vim.api.nvim_win_get_cursor(0)
-  local row = position[1] - 1 -- Adjust to 0-based indexing
-  local col = position[2]
+    -- Adjust the suggestion to account for consumed text
+    local lines = vim.split(suggestion, '\n', true)
+    for i = 1, _G.suggestion_line_index - 1 do
+        table.remove(lines, 1)
+    end
+    if #lines > 0 then
+        lines[1] = lines[1]:sub(_G.suggestion_char_index)
+    end
+    suggestion = table.concat(lines, '\n')
 
-  -- Split the suggestion into lines
-  local lines = vim.split(suggestion, '\n', true)
+    local current_buf = vim.api.nvim_get_current_buf()
+    local position = vim.api.nvim_win_get_cursor(0)
+    local row = position[1] - 1 -- Adjust to 0-based indexing
+    local col = position[2]
 
-  -- Clear existing extmarks
-  -- vim.api.nvim_buf_clear_namespace(current_buf, _G.ns_id, 0, -1)
+    -- Split the suggestion into lines
+    local lines = vim.split(suggestion, '\n', true)
 
-  local num_lines_to_insert = 0
-  -- Insert empty lines into the buffer if necessary
-  if #lines > 1 then
-    num_lines_to_insert = #lines - 1
-    -- Insert empty lines after current line
-    vim.api.nvim_buf_set_lines(current_buf, row + 1, row + 1, false, vim.fn['repeat']({' '}, num_lines_to_insert))
-  end
-
-  -- Now set the extmarks
-  -- First line: virt_text on current line starting at cursor column
-  vim.api.nvim_buf_set_extmark(
-    current_buf,
-    _G.ns_id,
-    row,
-    col,
-    {
-      virt_text = { { lines[1], "Comment" } },
-      hl_mode = 'combine',
-    }
-  )
-
-  -- Remaining lines: virt_text on the inserted empty lines
-  for i = 2, #lines do
-    local extmark_row = row + i - 1 -- Adjust row for each line
+    -- Now set the extmarks
+    -- First line: virt_text on current line starting at cursor column
     vim.api.nvim_buf_set_extmark(
-      current_buf,
-      _G.ns_id,
-      extmark_row,
-      0,
-      {
-        virt_text = { { lines[i], "Comment" } },
-        hl_mode = 'combine',
-      }
+        current_buf,
+        _G.ns_id,
+        row,
+        col,
+        {
+            virt_text = { { lines[1], "Comment" } },
+            hl_mode = 'combine',
+        }
     )
-  end
-  _G.num_lines_inserted = num_lines_to_insert
-end
 
+    -- Remaining lines: virt_text on the following lines
+    for i = 2, #lines do
+        local extmark_row = row + i - 1 -- Adjust row for each line
+        vim.api.nvim_buf_set_extmark(
+            current_buf,
+            _G.ns_id,
+            extmark_row,
+            0,
+            {
+                virt_text = { { lines[i], "Comment" } },
+                hl_mode = 'combine',
+            }
+        )
+    end
+    _G.num_lines_inserted = math.max(#lines - 1, 0)
+end
 
 function M.get_text_before_cursor()
   local position = vim.api.nvim_win_get_cursor(0)
