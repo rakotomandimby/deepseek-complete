@@ -101,6 +101,12 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 })
 
 
+vim.api.nvim_create_autocmd("InsertCharPre", {
+  pattern = "*",
+  callback = function()
+    clear_suggestion()
+  end
+})
 -- Key mappings
 vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()<CR>", { noremap = true, silent = true })
 
@@ -111,7 +117,7 @@ vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap, "<Cmd>lua suggest()
 -- end
 
 -- Space key
-vim.api.nvim_set_keymap("i", " ", "<Cmd>lua suggest()<CR> ", { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap("i", " ", "<Cmd>lua suggest()<CR> ", { noremap = true, silent = true })
 
 -- Uncomment these if you want to use them
 -- vim.api.nvim_set_keymap("i", user_opts.accept_all_keymap,    "<Cmd>lua accept_the_whole_suggestion()<CR>", { noremap = true, silent = true })
