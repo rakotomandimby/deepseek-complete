@@ -26,7 +26,7 @@ local function clear_suggestion()
   if _G.num_lines_inserted and _G.num_lines_inserted > 0 then
     local position = vim.api.nvim_win_get_cursor(0)
     local row = position[1] - 1 -- Adjust to 0-based indexing
-    vim.api.nvim_buf_set_lines(current_buf, row + 1, row + 1 + _G.num_lines_inserted -1, false, {}) -- remove the inserted lines
+    vim.api.nvim_buf_set_lines(current_buf, row + 1, row + 1 + _G.num_lines_inserted, false, {}) -- remove the inserted lines
     _G.num_lines_inserted = 0 -- Reset after removing lines
   end
 end
