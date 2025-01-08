@@ -29,6 +29,52 @@ function M.remove_markdown_delimiters(text)
   return table.concat(new_lines, "\n")
 end
 
+function M.clear_suggestion()
+  local current_buf = vim.api.nvim_get_current_buf()
+  vim.api.nvim_buf_clear_namespace(current_buf, _G.ns_id, 0, -1)
+
+  -- Remove the inserted lines if any
+  if _G.num_lines_inserted and _G.num_lines_inserted > 0 then
+    local position = vim.api.nvim_win_get_cursor(0)
+    local row = position[1] - 1 -- Adjust to 0-based indexing
+    vim.api.nvim_buf_set_lines(current_buf, row + 1, row + 1 + _G.num_lines_inserted, false, {}) -- remove the inserted lines
+    _G.num_lines_inserted = 0 -- Reset after removing lines
+  end
+end
+
+local function split_into_words(text)
+  -- Simple word splitting using whitespace as delimiter.  Consider more robust methods if needed.
+  return vim.split(text, "%%s+", {plain=true})
+end
+
+function M.accept_suggestion_word()
+    if _G.current_suggestion then
+        local words = split_into_words(_G.current_suggestion)
+        if #words > 0 then
+            local word = words[1]
+            local current_buf = vim.api.nvim_get_current_buf()
+            local position = vim.api.nvim_win_get_cursor(0)
+            local row = position[1] - 1
+            local col = position[2]
+
+            -- Insert the accepted word into the buffer
+            vim.api.nvim_buf_set_text(current_buf, row, col, row, col, {word})
+
+            -- Remove the accepted word from the suggestion
+            _G.current_suggestion = string.sub(_G.current_suggestion, #word + 1)
+
+            -- Update the displayed suggestion (clear and redraw)
+            M.clear_suggestion()
+            if _G.current_suggestion and #_G.current_suggestion > 0 then
+                M.set_suggestion_extmark(_G.current_suggestion)
+            end
+
+        else
+            _G.current_suggestion = nil -- Clear suggestion if no words left
+            M.clear_suggestion()
+        end
+    end
+end
 
 function M.set_suggestion_extmark(suggestion)
   -- Remove Markdown code block delimiters from the suggestion
