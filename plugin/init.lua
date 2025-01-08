@@ -18,6 +18,20 @@ local default_opts = {
   debounce_time = 1000,
 }
 
+local function clear_suggestion()
+  local current_buf = vim.api.nvim_get_current_buf()
+  vim.api.nvim_buf_clear_namespace(current_buf, _G.ns_id, 0, -1)
+
+  -- Remove the inserted lines if any
+  if _G.num_lines_inserted and _G.num_lines_inserted > 0 then
+    local position = vim.api.nvim_win_get_cursor(0)
+    local row = position[1] - 1 -- Adjust to 0-based indexing
+    vim.api.nvim_buf_set_lines(current_buf, row + 1, row + 1 + _G.num_lines_inserted -1, false, {}) -- remove the inserted lines
+    _G.num_lines_inserted = 0 -- Reset after removing lines
+  end
+end
+
+
 -- Read user configuration
 local user_opts = vim.tbl_deep_extend("force", default_opts, vim.g.rktmb_deepseek_complete_opts or {})
 
@@ -25,7 +39,7 @@ local function process_deepseek_response(response)
   vim.schedule(function()  -- Use vim.schedule to run this in the main thread
     local response_body = vim.fn.json_decode(response.body)
     if response_body.choices and #response_body.choices > 0 then
-      vim.api.nvim_buf_clear_namespace(0, _G.ns_id, 0, -1)
+      clear_suggestion()
       local choice = response_body.choices[1]
       local suggestion = choice.message.content
       rktmb_deepseek_complete.set_suggestion_extmark(suggestion)
@@ -82,7 +96,7 @@ end
 vim.api.nvim_create_autocmd("InsertLeave", {
   pattern = "*",
   callback = function()
-    vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+    clear_suggestion()
   end
 })
 

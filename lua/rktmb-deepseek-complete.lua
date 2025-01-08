@@ -1,6 +1,8 @@
 -- Initialize a module
 local M = {}
 
+_G.num_lines_inserted = 0
+
 function M.log(message)
   local log_file = io.open("/tmp/rktmb-deepseek-complete.log", "a")
   -- check if log_file is nil
@@ -14,13 +16,17 @@ end
 
 function M.remove_markdown_delimiters(text)
   local lines = vim.split(text, "\n", true)
-  if lines[1]:sub(1, 3) == "```" then
-    table.remove(lines, 1)
+  local new_lines = {}
+
+  for _, line in ipairs(lines) do
+    if line:sub(1, 3) == "```" then
+      table.insert(new_lines, "\n") -- Replace lines starting with "```" with newline
+    else
+      table.insert(new_lines, line)
+    end
   end
-  if lines[#lines]:sub(-3) == "```" then
-    lines[#lines] = nil
-  end
-  return table.concat(lines, "\n")
+
+  return table.concat(new_lines, "\n")
 end
 
 
@@ -39,9 +45,10 @@ function M.set_suggestion_extmark(suggestion)
   -- Clear existing extmarks
   -- vim.api.nvim_buf_clear_namespace(current_buf, _G.ns_id, 0, -1)
 
+  local num_lines_to_insert = 0
   -- Insert empty lines into the buffer if necessary
   if #lines > 1 then
-    local num_lines_to_insert = #lines - 1
+    num_lines_to_insert = #lines - 1
     -- Insert empty lines after current line
     vim.api.nvim_buf_set_lines(current_buf, row + 1, row + 1, false, vim.fn['repeat']({' '}, num_lines_to_insert))
   end
@@ -73,6 +80,7 @@ function M.set_suggestion_extmark(suggestion)
       }
     )
   end
+  _G.num_lines_inserted = num_lines_to_insert
 end
 
 
