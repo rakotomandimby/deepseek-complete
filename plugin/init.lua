@@ -101,7 +101,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 })
 
 
-vim.api.nvim_create_autocmd("InsertCharPre", {
+vim.api.nvim_create_autocmd("InsertCharPost", {
   pattern = "*",
   callback = function()
     clear_suggestion()
