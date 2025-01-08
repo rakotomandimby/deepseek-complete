@@ -101,10 +101,12 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 })
 
 
-vim.api.nvim_create_autocmd("InsertCharPost", {
+vim.api.nvim_create_autocmd("InsertCharPre", {
   pattern = "*",
   callback = function()
-    clear_suggestion()
+    vim.schedule(function()
+      clear_suggestion()
+    end)
   end
 })
 -- Key mappings
