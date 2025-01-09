@@ -214,6 +214,7 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_to_c
   table.insert(messages, { role = "user", content = "From the cursor to the end of the buffer, we have:\n```\n" .. text_after_cursor .. "\n```" })
   table.insert(messages, { role = "assistant", content = "Give me the line you want me to continue."})
   table.insert(messages, { role = "user", content = line_to_continue })
+  M.log("Line to continue: " .. line_to_continue)
   return messages
 end
 
