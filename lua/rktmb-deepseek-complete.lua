@@ -190,13 +190,16 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_to_c
   local messages = {}
   table.insert(messages, {
     role = "system",
-    content = "You are a software developer assistant that will complete the code from the surcor position, based on the provided context."
-      .. " Just answer with indented raw code, NO explanations, NO markdown formatting."
-      .. " The concatenation of the code before the cursor,"
+    content = "You are a software developer assistant that continues a line from the surcor position,"
+      .. " based on the provided context."
+      .. " DO NOT repeat what is before the cursor."
+      .. " You might have to continue either text or code."
+      .. " Answer with the continuation of the provided line. When providing code, "
+      .. " the concatenation of the code before the cursor,"
       .. " the code you propose,"
       .. " AND the code after your suggestion"
       .. " MUST be valid and consistent."
-      .. " You continue the code, so start your suggestion with the next word to be placed after the cursor."
+      .. " You continue the text or the code: start your suggestion with the next word to be placed after the cursor."
   })
   table.insert(messages, { role = "user", content = "I need you to complete the code." })
 
@@ -212,8 +215,8 @@ function M.build_messages_table(text_before_cursor, text_after_cursor, line_to_c
   table.insert(messages, { role = "user", content = "From the begining of the buffer to the cursor, we have:\n```\n" .. text_before_cursor .. "\n```" })
   table.insert(messages, { role = "assistant", content = "What is after the cursor?" })
   table.insert(messages, { role = "user", content = "From the cursor to the end of the buffer, we have:\n```\n" .. text_after_cursor .. "\n```" })
-  table.insert(messages, { role = "assistant", content = "Give me the line you want me to continue."})
-  table.insert(messages, { role = "user", content = line_to_continue })
+  table.insert(messages, { role = "assistant", content = "Give me the line you want me to continue in the current buffer."})
+  table.insert(messages, { role = "user", content = "Continue this line: `" ..line_to_continue .. "`" })
   M.log("Line to continue: " .. line_to_continue)
   return messages
 end
