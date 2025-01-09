@@ -66,7 +66,7 @@ function M.accept_suggestion_word()
   vim.api.nvim_buf_set_text(current_buf, row, col, row, col, { " " .. first_word })
 
   -- Move the cursor to the end of the inserted word
-  vim.api.nvim_win_set_cursor(0, { row + 1, col + #first_word })
+  vim.api.nvim_win_set_cursor(0, { row + 1, col + #first_word + 1 })
 
   -- Update the current suggestion to remove the accepted word
   _G.current_suggestion = rest_of_suggestion:match("^%s*(.*)")
