@@ -59,14 +59,14 @@ function M.accept_suggestion_word()
 
   suggestion = M.remove_markdown_delimiters(suggestion)
   -- Extract the first word from the suggestion
-  local first_word = string.match(suggestion, "^%%s*(%%S+)") or ""
+  local first_word = string.match(suggestion, "^%%%%s*(%%%%S+)") or ""
 
   if first_word ~= "" then
     vim.api.nvim_buf_set_text(0, current_row - 1, current_col, current_row - 1, current_col, { first_word })
     vim.api.nvim_win_set_cursor(0, { current_row, current_col + #first_word })
 
-    -- Update current_suggestion, removing the accepted word and leading/trailing whitespace
-    _G.current_suggestion = string.match(suggestion, "^%%s*" .. first_word .. "%%s*(.*)") or ""
+    -- Update current_suggestion, removing the acceptedword and leading/trailing whitespace
+    _G.current_suggestion = string.match(suggestion, "^%%%%s*" .. first_word .. "%%%%s*(.*)") or ""
 
     -- Clear the suggestion if it's empty, otherwise re-display it
     if _G.current_suggestion == "" then
