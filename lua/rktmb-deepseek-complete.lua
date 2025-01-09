@@ -44,41 +44,39 @@ function M.clear_suggestion()
   end
 end
 
+
 function M.accept_suggestion_word()
-  if _G.current_suggestion == nil then
+  if not _G.current_suggestion or _G.current_suggestion == "" then
     return
   end
 
-  local suggestion = _G.current_suggestion
-  -- Clear the suggestion extmark only if there are more words to accept
-  
+  local current_buf = vim.api.nvim_get_current_buf()
+  local position = vim.api.nvim_win_get_cursor(0)
+  local row = position[1] - 1 -- Adjust to 0-based indexing
+  local col = position[2]
 
-  local current_line = vim.api.nvim_get_current_line()
-  local current_pos = vim.api.nvim_win_get_cursor(0)
-  local current_row, current_col = current_pos[1], current_pos[2]
+  -- Find the first word in the suggestion
+  local first_word, rest_of_suggestion = _G.current_suggestion:match("^(%S+)(.*)")
 
-  suggestion = M.remove_markdown_delimiters(suggestion)
-  -- Extract the first word from the suggestion
-  local first_word = string.match(suggestion, "^%%%%s*(%%%%S+)") or ""
+  if not first_word then
+    return
+  end
 
-  if first_word ~= "" then
-    vim.api.nvim_buf_set_text(0, current_row - 1, current_col, current_row - 1, current_col, { first_word })
-    vim.api.nvim_win_set_cursor(0, { current_row, current_col + #first_word })
+  -- Insert the first word at the current cursor position
+  vim.api.nvim_buf_set_text(current_buf, row, col, row, col, { first_word })
 
-    -- Update current_suggestion, removing the acceptedword and leading/trailing whitespace
-    _G.current_suggestion = string.match(suggestion, "^%%%%s*" .. first_word .. "%%%%s*(.*)") or ""
+  -- Move the cursor to the end of the inserted word
+  vim.api.nvim_win_set_cursor(0, { row + 1, col + #first_word })
 
-    -- Clear the suggestion if it's empty, otherwise re-display it
-    if _G.current_suggestion == "" then
-      M.clear_suggestion()
-      _G.current_suggestion = nil
-    else
-      M.clear_suggestion()
-      M.set_suggestion_extmark(_G.current_suggestion)
-    end
+  -- Update the current suggestion to remove the accepted word
+  _G.current_suggestion = rest_of_suggestion:match("^%s*(.*)")
+
+  -- Clear the current extmark and set a new one with the updated suggestion
+  M.clear_suggestion()
+  if _G.current_suggestion and _G.current_suggestion ~= "" then
+    M.set_suggestion_extmark(_G.current_suggestion)
   end
 end
-
 
 function M.set_suggestion_extmark(suggestion)
   suggestion = M.remove_markdown_delimiters(suggestion)
@@ -111,7 +109,7 @@ function M.set_suggestion_extmark(suggestion)
 
 
   for i = 2, #lines do
-    local extmark_row = row + i - 1 
+    local extmark_row = row + i - 1
     vim.api.nvim_buf_set_extmark(
       current_buf,
       _G.ns_id,
