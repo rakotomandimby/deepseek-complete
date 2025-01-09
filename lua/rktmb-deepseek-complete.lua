@@ -54,42 +54,33 @@ function M.accept_suggestion_word()
   local row = position[1] - 1 -- Adjust to 0-based indexing
   local col = position[2]
 
-  -- Split the suggestion into lines
-  local lines = vim.split(_G.current_suggestion, '\n', true)
-
-  -- Get the first word of the current line's suggestion
-  local current_line_suggestion = lines[1]
-  local first_word, rest_of_line = current_line_suggestion:match("^(%%S+)(.*)")
+  -- Find the first word in the suggestion
+  local first_word, rest_of_suggestion = _G.current_suggestion:match("^(%%S+)(.*)")
 
   if not first_word then
-    -- No word found on the current line, move to the next line if available
-    if #lines > 1 then
-      table.remove(lines, 1) -- Remove the current line from the suggestion
-      _G.current_suggestion = table.concat(lines, '\n')
-      M.clear_suggestion()
-      if _G.current_suggestion ~= "" then
-        M.set_suggestion_extmark(_G.current_suggestion)
-      end
-      vim.api.nvim_win_set_cursor(0, {row + 2, 1}) -- Move cursor to the next line
-    end
     return
   end
 
   -- Insert the first word at the current cursor position
-  vim.api.nvim_buf_set_text(current_buf, row, col, row, col, {first_word .. " "})
+  vim.api.nvim_buf_set_text(current_buf, row, col, row, col, { first_word })
 
-  -- Update the current suggestion
-  lines[1] = rest_of_line:match("^%%s*(.*)") or ""
-  _G.current_suggestion = table.concat(lines, '\n')
+  -- Move the cursor to the end of the inserted word
+  vim.api.nvim_win_set_cursor(0, { row + 1, col + #first_word })
+
+  -- Update the current suggestion to remove the accepted word
+  _G.current_suggestion = rest_of_suggestion:match("^%%s*(.*)")
+
+  -- If the extmark is multi-line, clear the current line and move the cursor to the beginning
+  if _G.num_lines_inserted > 0 then
+    vim.api.nvim_buf_set_lines(current_buf, row, row + 1, false, { "" })
+    vim.api.nvim_win_set_cursor(0, { row + 1, 0 })
+  end
 
   -- Clear the current extmark and set a new one with the updated suggestion
   M.clear_suggestion()
-  if _G.current_suggestion ~= "" then
+  if _G.current_suggestion and _G.current_suggestion ~= "" then
     M.set_suggestion_extmark(_G.current_suggestion)
   end
-
-  -- Move the cursor to the end of the inserted word
-  vim.api.nvim_win_set_cursor(0, {row + 1, col + #first_word + 1})
 end
 
 function M.set_suggestion_extmark(suggestion)
