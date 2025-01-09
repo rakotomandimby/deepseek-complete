@@ -42,36 +42,61 @@ function M.clear_suggestion()
   end
 end
 
-local function split_into_words(text)
-  -- Simple word splitting using whitespace as delimiter.  Consider more robust methods if needed.
-  return vim.split(text, "%%s+", {plain=true})
-end
 
 function M.accept_suggestion_word()
     if _G.current_suggestion then
-        local words = split_into_words(_G.current_suggestion)
-        if #words > 0 then
-            local word = words[1]
-            local current_buf = vim.api.nvim_get_current_buf()
-            local position = vim.api.nvim_win_get_cursor(0)
-            local row = position[1] - 1
-            local col = position[2]
+        -- Find the position of the next space or newline
+        local next_space = _G.current_suggestion:find("%%s")
+        local next_newline = _G.current_suggestion:find("\n")
+        local split_pos = nil
 
-            -- Insert the accepted word into the buffer
-            vim.api.nvim_buf_set_text(current_buf, row, col, row, col, {word})
+        if next_space and next_newline then
+            split_pos = math.min(next_space, next_newline)
+        elseif next_space then
+            split_pos = next_space
+        elseif next_newline then
+            split_pos = next_newline
+        end
 
-            -- Remove the accepted word from the suggestion
-            _G.current_suggestion = string.sub(_G.current_suggestion, #word + 1)
-
-            -- Update the displayed suggestion (clear and redraw)
-            M.clear_suggestion()
-            if _G.current_suggestion and #_G.current_suggestion > 0 then
-                M.set_suggestion_extmark(_G.current_suggestion)
-            end
-
+        local word = ""
+        if split_pos then
+            word = _G.current_suggestion:sub(1, split_pos - 1)
         else
-            _G.current_suggestion = nil -- Clear suggestion if no words left
-            M.clear_suggestion()
+            word = _G.current_suggestion
+        end
+
+        -- Check for leading newline characters
+        local leading_newlines = _G.current_suggestion:match("^\n+")
+        local num_newlines = leading_newlines and #leading_newlines or 0
+
+        local current_buf = vim.api.nvim_get_current_buf()
+        local position = vim.api.nvim_win_get_cursor(0)
+        local row = position[1] - 1
+        local col = position[2]
+
+        -- Move cursor down if there are leading newlines
+        if num_newlines > 0 then
+            row = row + num_newlines
+            col = 0
+            vim.api.nvim_win_set_cursor(0, { row + 1, col })
+        end
+
+        -- Insert the accepted word into the buffer
+        vim.api.nvim_buf_set_text(current_buf, row, col, row, col, { word })
+
+        -- Update cursor position after insertion
+        col = col + #word
+        vim.api.nvim_win_set_cursor(0, { row + 1, col })
+
+        -- Remove the accepted word and any leading whitespace/newlines from the suggestion
+        _G.current_suggestion = _G.current_suggestion:sub(#leading_newlines + #word + 1):gsub("^%%s*", "")
+
+        -- Update the displayed suggestion (clear and redraw)
+        M.clear_suggestion()
+        if _G.current_suggestion and #_G.current_suggestion > 0 then
+            M.set_suggestion_extmark(_G.current_suggestion)
+        else
+            _G.current_suggestion = nil -- Clear suggestion if no text left
         end
     end
 end
