@@ -42,21 +42,11 @@ function M.clear_suggestion()
   end
 end
 
-
 function M.accept_suggestion_word()
     if _G.current_suggestion then
         -- Find the position of the next space or newline
-        local next_space = _G.current_suggestion:find("%%s")
-        local next_newline = _G.current_suggestion:find("\n")
-        local split_pos = nil
-
-        if next_space and next_newline then
-            split_pos = math.min(next_space, next_newline)
-        elseif next_space then
-            split_pos = next_space
-        elseif next_newline then
-            split_pos = next_newline
-        end
+        local next_space = _G.current_suggestion:find("%s")
+        local split_pos = next_space
 
         local word = ""
         if split_pos then
@@ -65,16 +55,16 @@ function M.accept_suggestion_word()
             word = _G.current_suggestion
         end
 
-        -- Check for leading newline characters
-        local leading_newlines = _G.current_suggestion:match("^\n+")
+        -- Handle the case where there are leading newline characters
+        local leading_newlines = _G.current_suggestion:match("^\n*")
         local num_newlines = leading_newlines and #leading_newlines or 0
 
+        -- Move cursor down if there are leading newlines
         local current_buf = vim.api.nvim_get_current_buf()
         local position = vim.api.nvim_win_get_cursor(0)
         local row = position[1] - 1
         local col = position[2]
 
-        -- Move cursor down if there are leading newlines
         if num_newlines > 0 then
             row = row + num_newlines
             col = 0
@@ -89,7 +79,10 @@ function M.accept_suggestion_word()
         vim.api.nvim_win_set_cursor(0, { row + 1, col })
 
         -- Remove the accepted word and any leading whitespace/newlines from the suggestion
-        _G.current_suggestion = _G.current_suggestion:sub(#leading_newlines + #word + 1):gsub("^%%s*", "")
+        local remaining_suggestion = _G.current_suggestion:sub(#leading_newlines + #word + 1)
+        remaining_suggestion = remaining_suggestion:gsub("^%s*", "")  -- Remove any leading whitespace
+
+        _G.current_suggestion = remaining_suggestion
 
         -- Update the displayed suggestion (clear and redraw)
         M.clear_suggestion()
