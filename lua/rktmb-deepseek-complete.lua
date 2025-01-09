@@ -92,7 +92,7 @@ function M.set_suggestion_extmark(suggestion)
 
   if #lines > 1 then
     num_lines_to_insert = #lines - 1
-    vim.api.nvim_buf_set_lines(current_buf, row +1, row + 1, false, vim.fn['repeat']({' '}, num_lines_to_insert))
+    vim.api.nvim_buf_set_lines(current_buf, row +1, row + 1, false, vim.fn['repeat']({'_'}, num_lines_to_insert))
   end
 
 
