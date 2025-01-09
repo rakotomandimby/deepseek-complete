@@ -81,22 +81,24 @@ _G.suggest = function()
   })
 end
 
-vim.api.nvim_create_autocmd("InsertLeave", {
-  pattern = "*",
-  callback = function()
-    rktmb_deepseek_complete.clear_suggestion()
-  end
-})
 
+vim.api.nvim_create_autocmd({"InsertLeave", "BufLeave"}, {
+    pattern = "*",
+    callback = function()
+        rktmb_deepseek_complete.clear_suggestion()
+    end
+})
 
 vim.api.nvim_create_autocmd("InsertCharPre", {
   pattern = "*",
   callback = function()
-    vim.schedule(function()
-      rktmb_deepseek_complete.clear_suggestion()
-    end)
+    vim.schedule(function() rktmb_deepseek_complete.clear_suggestion() end)
   end
 })
+
 -- Key mappings
-vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap  , "<Cmd>lua suggest()<CR>",                                                   { noremap = true, silent = true })
+vim.api.nvim_set_keymap("i", user_opts.suggest_lines_keymap  , "<Cmd>lua _G.suggest()<CR>",  { noremap = true, silent = true })
 vim.api.nvim_set_keymap("i", user_opts.accept_word_keymap    , "<Cmd>lua require('rktmb-deepseek-complete').accept_suggestion_word()<CR>", { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap("i", "<Space>", "<Cmd>lua _G.suggest()<CR><Space>", { noremap = true, silent = true })
+
+
