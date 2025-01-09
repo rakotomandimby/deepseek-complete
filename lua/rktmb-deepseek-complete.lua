@@ -63,7 +63,7 @@ function M.accept_suggestion_word()
   end
 
   -- Insert the first word at the current cursor position
-  vim.api.nvim_buf_set_text(current_buf, row, col, row, col, { first_word })
+  vim.api.nvim_buf_set_text(current_buf, row, col, row, col, { " " .. first_word })
 
   -- Move the cursor to the end of the inserted word
   vim.api.nvim_win_set_cursor(0, { row + 1, col + #first_word })
