@@ -43,50 +43,41 @@ function M.clear_suggestion()
 end
 
 function M.accept_suggestion_word()
-    if _G.current_suggestion then
-        -- Find the position of the next space or newline, or end of string
-        local next_space = _G.current_suggestion:find("[%%s\n]") or #_G.current_suggestion + 1
-        local word = _G.current_suggestion:sub(1, next_space - 1)
+  if _G.current_suggestion == nil then
+    return
+  end
 
-        -- Count leading newlines
-        local num_newlines = 0
-        while _G.current_suggestion:sub(1, 1) == "\n" do
-            num_newlines = num_newlines + 1
-            _G.current_suggestion = _G.current_suggestion:sub(2) -- Remove newline
-        end
+  local suggestion = _G.current_suggestion
+  M.clear_suggestion() -- Clear the suggestion extmark
 
-        local current_buf = vim.api.nvim_get_current_buf()
-        local position = vim.api.nvim_win_get_cursor(0)
-        local row = position[1] - 1
-        local col = position[2]
+  local lines = vim.split(suggestion, "\n", true)
+  local first_line = lines[1]
+  local rest_of_lines = {}
+  for i = 2, #lines do
+    table.insert(rest_of_lines, lines[i])
+  end
 
-        -- Adjust cursor position for leading newlines
-        row = row + num_newlines
-        if num_newlines > 0 then
-            col = 0 -- Start at beginning of line after newlines
-        end
-        vim.api.nvim_win_set_cursor(0, { row + 1, col })
+  local current_line = vim.api.nvim_get_current_line()
+  local current_pos = vim.api.nvim_win_get_cursor(0)
+  local current_row, current_col = current_pos[1], current_pos[2]
 
+  -- Extract the first word from the suggestion
+  local first_word = string.match(first_line, "^%%s*(%%S+)") or ""
+  if first_word ~= "" then
+    -- Insert the first word into the current line
+    vim.api.nvim_buf_set_text(0, current_row - 1, current_col, current_row - 1, current_col, { first_word })
 
-        -- Insert the accepted word and a space into the buffer
-        vim.api.nvim_buf_set_text(current_buf, row, col, row, col, { word .. " " })
+    -- Move the cursor after the inserted word
+    vim.api.nvim_win_set_cursor(0, { current_row, current_col + #first_word })
 
-        -- Update cursor position after insertion
-        col = col + #word + 1 -- +1 for the space
-        vim.api.nvim_win_set_cursor(0, { row + 1, col })
+    -- Update current_suggestion, removing the accepted word
+    _G.current_suggestion = string.sub(first_line, #first_word + 1) .. "\n" .. table.concat(rest_of_lines, "\n")
 
-        -- Remove the accepted word, space, and any leading whitespace/newlines from the suggestion
-        _G.current_suggestion = _G.current_suggestion:sub(next_space)
-        _G.current_suggestion = _G.current_suggestion:gsub("^%%s*", "")  -- Remove any leading whitespace
-
-        -- Update the displayed suggestion
-        M.clear_suggestion()
-        if _G.current_suggestion and #_G.current_suggestion > 0 then
-            M.set_suggestion_extmark(_G.current_suggestion)
-        else
-            _G.current_suggestion = nil
-        end
+    -- If the remaining suggestion is not empty, re-display it
+    if _G.current_suggestion and string.match(_G.current_suggestion, "^%%s*(%%S+)") then
+      M.set_suggestion_extmark(_G.current_suggestion)
     end
+  end
 end
 
 function M.set_suggestion_extmark(suggestion)
