@@ -23,12 +23,12 @@ Be careful with this, as:
 Install the plugin with your favorite package manager:
 
 ```lua
-use 'rakotomandimby/rktmb-deepseek-complete.nvim'
+use 'rakotomandimby/deepseek-complete.nvim'
 ```
 
 ```lua
 {
-    "rakotomandimby/rktmb-deepseek-complete.nvim"
+    "rakotomandimby/deepseek-complete.nvim"
 }
 ```
 
