@@ -2,7 +2,7 @@
 > **Stuck development**
 > 
 > The development of this plugin is stuck on one technical point: having a decent suggestion acceptation algorithm and codebase.
-> Suggestion acceptation is about dealing with cursor position, word replacement, space character handling (indentation),...
+> Suggestion acceptation is about dealing with cursor position, word replacement, space character handling ( **word separator** vs **indentation**),...
 > 
 > Having a good plugin in that sense is not easy, and **I am stuck on this**.
 
